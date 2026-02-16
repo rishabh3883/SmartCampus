@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+:root {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light;
+  --bg-primary: #f8fafc;
+  /* Slate 50 */
+  --bg-secondary: #ffffff;
+  /* White */
+  --text-primary: #0f172a;
+  /* Slate 900 */
+  --text-secondary: #64748b;
+  /* Slate 500 */
+  --accent-primary: #10b981;
+  /* Emerald 500 */
+  --accent-hover: #059669;
+  /* Emerald 600 */
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  /* Subtle mesh gradient for depth - Light Mode Version */
+  background-image:
+    radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.03) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.03) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Custom Scrollbar - Sleek & Minimal */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  /* Slate 300 */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+  /* Slate 400 */
+}
+
+/* --- Components System --- */
+
+/* Glass Cards - Cleaner, less blur, more structure */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  /* Slate 200 */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+/* Buttons */
+.btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 shadow-sm;
+}
+
+.btn-primary {
+  @apply bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 shadow-emerald-500/20;
+}
+
+.btn-secondary {
+  @apply bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 hover:text-slate-900 active:scale-95;
+}
+
+.btn-danger {
+  @apply bg-rose-600 text-white hover:bg-rose-700 active:scale-95 shadow-lg shadow-rose-500/20;
+}
+
+.btn-ghost {
+  @apply text-slate-500 hover:text-slate-900 hover:bg-slate-100;
+}
+
+/* Cards */
+.card {
+  @apply bg-white rounded-xl border border-slate-200 p-6 shadow-sm;
+}
+
+.card-hover {
+  @apply transition-all duration-200 hover:border-slate-300 hover:shadow-md;
+}
+
+/* Inputs */
+.input-field {
+  @apply w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors shadow-sm;
+}
+
+.label {
+  @apply block text-sm font-medium text-slate-600 mb-1.5;
+}
+
+/* Utilities */
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-500;
+}
+
+.page-container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+}
+
+.animate-enter {
+  animation: enter 0.4s ease-out;
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
