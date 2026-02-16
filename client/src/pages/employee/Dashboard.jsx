@@ -84,7 +84,7 @@ const EmployeeDashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [user, setUser] = useState(null);
     const [stats, setStats] = useState({ totalStudents: 0, hostelers: 0, dayScholars: 0 });
-    const [emergencyCount, setEmergencyCount] = useState(0);
+    const [taskCount, setTaskCount] = useState(0);
 
     // Data States
     const [hostels, setHostels] = useState([]);
@@ -202,10 +202,10 @@ const EmployeeDashboard = () => {
                                 <StatCard title="Total Students" value={stats.totalStudents} icon={Users} color="indigo" subValue="Campus Population" />
                                 <StatCard title="Hostelers" value={stats.hostelers} icon={Home} color="emerald" subValue="In-Residence" />
                                 <StatCard title="Day Scholars" value={stats.dayScholars} icon={GraduationCap} color="blue" subValue="Commuters" />
-                                <StatCard title="Pending Tasks" value={emergencyCount} icon={AlertTriangle} color="rose" subValue="Action Required" />
+                                <StatCard title="Active Tasks" value={taskCount} icon={AlertTriangle} color="rose" subValue="Action Required" />
                             </div>
 
-                            <EmergencyTasks onCountChange={setEmergencyCount} />
+                            <ActionableTasks onCountChange={setTaskCount} />
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div className="card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
@@ -444,8 +444,8 @@ const EmployeeDashboard = () => {
     );
 };
 
-// --- Sub-Component: Emergency Tasks ---
-const EmergencyTasks = ({ onCountChange }) => {
+// --- Sub-Component: Actionable Tasks ---
+const ActionableTasks = ({ onCountChange }) => {
     const [tasks, setTasks] = useState([]);
     const [userId, setUserId] = useState(null);
 
@@ -459,7 +459,7 @@ const EmergencyTasks = ({ onCountChange }) => {
     const fetchTasks = async () => {
         try {
             const { data } = await API.get('/complaints');
-            const urgent = data.filter(c => c.type === 'Emergency' && (c.status === 'Approved' || c.status === 'On The Way'));
+            const urgent = data.filter(c => c.status === 'Approved' || c.status === 'On The Way');
             setTasks(urgent);
             if (onCountChange) onCountChange(urgent.length);
         } catch (err) { console.error(err); }
@@ -468,12 +468,12 @@ const EmergencyTasks = ({ onCountChange }) => {
     if (tasks.length === 0) return null;
 
     return (
-        <div className="bg-rose-50 border border-rose-100 rounded-2xl p-6 relative overflow-hidden ring-4 ring-rose-100/50 animate-pulse-slow">
+        <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 relative overflow-hidden ring-4 ring-indigo-100/50 animate-pulse-slow">
             <div className="flex items-center gap-3 mb-4 relative z-10">
-                <div className="bg-rose-600 text-white p-2 rounded-lg animate-bounce">
-                    <AlertTriangle size={24} />
+                <div className="bg-indigo-600 text-white p-2 rounded-lg animate-bounce">
+                    <ClipboardList size={24} />
                 </div>
-                <h2 className="text-xl font-bold text-rose-700">Emergency Actions Required</h2>
+                <h2 className="text-xl font-bold text-indigo-700">Assigned Actions & Requests</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
@@ -488,7 +488,7 @@ const EmergencyTasks = ({ onCountChange }) => {
                             <h3 className="font-bold text-slate-900 mb-1">{task.title}</h3>
                             <p className="text-xs text-slate-500 mb-3">{task.description}</p>
                             <div className="flex justify-between items-center">
-                                <span className="text-[10px] font-bold bg-rose-100 text-rose-700 px-2 py-1 rounded">URGENT</span>
+                                <span className={`text-[10px] font-bold px-2 py-1 rounded ${task.type === 'Emergency' ? 'bg-rose-100 text-rose-700 animate-pulse' : 'bg-indigo-100 text-indigo-700'}`}>{task.type === 'Emergency' ? 'URGENT' : 'ASSIGNED'}</span>
                                 {isUnassigned && (
                                     <button onClick={() => API.post(`/complaints/${task._id}/assign`).then(() => { alert("Accepted!"); fetchTasks(); })} className="bg-rose-600 text-white text-xs font-bold px-3 py-1.5 rounded hover:bg-rose-700 transition-colors">
                                         ACCEPT

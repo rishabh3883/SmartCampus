@@ -769,14 +769,17 @@ const AdminDashboard = () => {
                                                                     <Send size={12} className="mr-1" /> Broadcast
                                                                 </button>
                                                             ) : (
-                                                                <button onClick={() => handleAction(c._id, 'Resolved')} className="p-1 rounded hover:bg-emerald-50 text-emerald-600"><CheckCircle size={14} /></button>
+                                                                <>
+                                                                    <button onClick={() => handleAction(c._id, 'Approved')} className="p-1 rounded hover:bg-blue-50 text-blue-600" title="Approve for Staff"><Send size={14} /></button>
+                                                                    <button onClick={() => handleAction(c._id, 'Resolved')} className="p-1 rounded hover:bg-emerald-50 text-emerald-600"><CheckCircle size={14} /></button>
+                                                                </>
                                                             )}
                                                             <button onClick={() => handleAction(c._id, 'Rejected')} className="p-1 rounded hover:bg-rose-50 text-rose-600"><XCircle size={14} /></button>
                                                         </>
                                                     )}
-                                                    {c.status === 'Approved' && c.type === 'Emergency' && (
+                                                    {c.status === 'Approved' && (
                                                         <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-100 flex items-center">
-                                                            <CheckCircle size={10} className="mr-1" /> Broadcasted to Staff
+                                                            <CheckCircle size={10} className="mr-1" /> {c.type === 'Emergency' ? 'Broadcasted to Staff' : 'Sent to Staff Dashboard'}
                                                         </span>
                                                     )}
                                                 </div>
