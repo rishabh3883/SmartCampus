@@ -12,14 +12,22 @@ import StudentEvents from './pages/student/StudentEvents';
 import AdminLibrary from './pages/admin/AdminLibrary';
 import AdminReports from './pages/admin/AdminReports';
 import AdminEnvironment from './pages/admin/AdminEnvironment';
+import AdminTimetable from './pages/admin/AdminTimetable';
 import InfraNews from './pages/employee/InfraNews';
 import StudentLibrary from './pages/student/StudentLibrary';
 import SecurityDashboard from './pages/security/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
+import SocialFeed from './pages/student/SocialFeed';
+import ChatApp from './pages/student/ChatApp';
+import AdminModeration from './pages/admin/AdminModeration';
+
+import EmergencyModal from './components/EmergencyModal';
+
 function App() {
   return (
     <AuthProvider>
+      <EmergencyModal />
       <Router>
         <Routes>
           <Route path="/" element={<Landing />} />
@@ -33,6 +41,8 @@ function App() {
             <Route path="/student" element={<StudentDashboard />} />
             <Route path="/student/events" element={<StudentEvents />} />
             <Route path="/student/library" element={<StudentLibrary />} />
+            <Route path="/student/social" element={<SocialFeed />} />
+            <Route path="/student/chat" element={<ChatApp />} />
           </Route>
 
           {/* Admin Routes */}
@@ -42,6 +52,8 @@ function App() {
             <Route path="/admin/library" element={<AdminLibrary />} />
             <Route path="/admin/reports" element={<AdminReports />} />
             <Route path="/admin/environment" element={<AdminEnvironment />} />
+            <Route path="/admin/timetable" element={<AdminTimetable />} />
+            <Route path="/admin/social-moderation" element={<AdminModeration />} />
           </Route>
 
           {/* Employee Routes */}

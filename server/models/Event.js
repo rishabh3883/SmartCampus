@@ -9,7 +9,8 @@ const eventSchema = new mongoose.Schema({
     totalSeats: { type: Number, required: true },
     bookedSeats: { type: Number, default: 0 },
     rules: { type: [String], default: [] },
-    organizer: { type: String, required: true }
+    organizer: { type: String, required: true },
+    category: { type: String, enum: ['Sports', 'Fest', 'Hackathon', 'Seminar', 'Academic', 'Cultural', 'Other'], default: 'Other' }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Event', eventSchema);

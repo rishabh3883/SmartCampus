@@ -6,10 +6,13 @@ import { useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, FileText, BookOpen, Calendar, Settings, LogOut,
     Menu, Bell, User, ChevronRight, Camera, XCircle, CheckCircle,
-    Clock, Plus, Flame, Trophy, AlertTriangle, MapPin, Search
+    Clock, Plus, Flame, Trophy, AlertTriangle, MapPin, Search,
+    MessageSquare, Users
 } from 'lucide-react';
 import StudentEvents from './StudentEvents';
 import StudentLibrary from './StudentLibrary';
+import SocialFeed from './SocialFeed';
+import ChatApp from './ChatApp';
 
 const StudentDashboard = () => {
     const { user, handleLogout } = useAuth();
@@ -121,7 +124,7 @@ const StudentDashboard = () => {
             <aside className={`bg-white border-r border-slate-200 fixed lg:static inset-y-0 left-0 z-40 w-64 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} transition-transform duration-300 flex flex-col`}>
                 <div className="h-20 flex items-center px-6 border-b border-slate-100">
                     <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold mr-3 shadow-indigo-200 shadow-lg">S</div>
-                    <span className="text-xl font-bold text-slate-800">SmartCampus</span>
+                    <span className="text-xl font-bold text-slate-800">SmartCampusManagement</span>
                 </div>
 
                 <div className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
@@ -130,6 +133,8 @@ const StudentDashboard = () => {
                     <SidebarItem id="complaints" label="My Complaints" icon={FileText} />
                     <SidebarItem id="library" label="Library" icon={BookOpen} />
                     <SidebarItem id="events" label="Events" icon={Calendar} />
+                    <SidebarItem id="social" label="Campus Social" icon={Users} />
+                    <SidebarItem id="chat" label="Chat" icon={MessageSquare} />
 
                     <div className="mt-8 text-xs font-bold text-slate-400 uppercase px-4 mb-2">Account</div>
                     <SidebarItem id="profile" label="Profile" icon={User} />
@@ -325,6 +330,18 @@ const StudentDashboard = () => {
                     {activeTab === 'events' && (
                         <div className="animate-in fade-in zoom-in-95 duration-300">
                             <StudentEvents isEmbedded={true} />
+                        </div>
+                    )}
+
+                    {activeTab === 'social' && (
+                        <div className="animate-in fade-in zoom-in-95 duration-300 h-[calc(100vh-120px)]">
+                            <SocialFeed isEmbedded={true} />
+                        </div>
+                    )}
+
+                    {activeTab === 'chat' && (
+                        <div className="animate-in fade-in zoom-in-95 duration-300 h-[calc(100vh-120px)]">
+                            <ChatApp isEmbedded={true} />
                         </div>
                     )}
 

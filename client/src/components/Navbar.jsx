@@ -17,7 +17,7 @@ const Navbar = () => {
                     S
                 </div>
                 <div className="flex flex-col">
-                    <span className="text-lg font-bold text-slate-800 leading-tight">Smart<span className="text-emerald-600">Campus</span></span>
+                    <span className="text-lg font-bold text-slate-800 leading-tight">Campus<span className="text-emerald-600">Management</span></span>
                     {user && (
                         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none">
                             {user.role} Portal

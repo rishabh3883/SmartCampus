@@ -6,7 +6,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import InsightsWidget from '../../components/InsightsWidget';
 
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Sidebar = ({ activeTab, setActiveTab, complaintsCount, usersCount }) => {
     const navigate = useNavigate();
@@ -27,7 +27,7 @@ const Sidebar = ({ activeTab, setActiveTab, complaintsCount, usersCount }) => {
                     <LayoutDashboard className="text-white" size={20} />
                 </div>
                 <div>
-                    <h1 className="text-lg font-bold text-slate-900 tracking-tight leading-tight">SmartCampus</h1>
+                    <h1 className="text-lg font-bold text-slate-900 tracking-tight leading-tight">SmartCampusManagement</h1>
                     <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Admin Console</p>
                 </div>
             </div>
@@ -45,8 +45,10 @@ const Sidebar = ({ activeTab, setActiveTab, complaintsCount, usersCount }) => {
                 <p className="px-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Quick Access</p>
                 <QuickLink href="/admin/library" icon={BookOpen} label="Library" />
                 <QuickLink href="/admin/events" icon={Calendar} label="Events" />
+                <QuickLink href="/admin/timetable" icon={Clock} label="Timetable" />
                 <QuickLink href="/admin/reports" icon={FileText} label="Reports" />
                 <QuickLink href="/admin/environment" icon={Cpu} label="AI Observer" />
+                <QuickLink href="/admin/social-moderation" icon={Shield} label="Social Mod" />
             </div>
 
             {/* Logout & Profile */}
@@ -92,10 +94,10 @@ const SidebarItem = ({ id, label, icon: Icon, activeTab, setActiveTab, count }) 
 );
 
 const QuickLink = ({ href, icon: Icon, label }) => (
-    <a href={href} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all duration-200 group">
+    <Link to={href} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all duration-200 group">
         <Icon size={18} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
         {label}
-    </a>
+    </Link>
 );
 
 const AdminDashboard = () => {

@@ -54,7 +54,7 @@ const Landing = () => {
             <section className="py-24 bg-white border-y border-slate-100">
                 <div className="page-container">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl font-bold text-slate-900 mb-4">Why SmartCampus?</h2>
+                        <h2 className="text-3xl font-bold text-slate-900 mb-4">Why SmartCampusManagement?</h2>
                         <p className="text-slate-500 max-w-2xl mx-auto">Everything you need to manage a modern educational institution, all in one place.</p>
                     </div>
 
@@ -84,10 +84,10 @@ const Landing = () => {
                 <div className="page-container flex flex-col md:flex-row justify-between items-center gap-6">
                     <div className="flex items-center gap-2">
                         <div className="w-6 h-6 bg-emerald-600 rounded-md flex items-center justify-center text-white font-bold text-xs">S</div>
-                        <span className="font-bold text-slate-700">SmartCampus</span>
+                        <span className="font-bold text-slate-700">SmartCampusManagement</span>
                     </div>
                     <div className="text-slate-500 text-sm">
-                        © 2024 SmartCampus Inc. All rights reserved.
+                        © 2024 SmartCampusManagement Inc. All rights reserved.
                     </div>
                     <div className="flex gap-6 text-slate-400">
                         <a href="#" className="hover:text-emerald-600 transition-colors">Privacy</a>

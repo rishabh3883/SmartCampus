@@ -1,0 +1,12 @@
+{
+  "name": "smart-campus-dashboard",
+  "version": "1.0.0",
+  "description": "> A MERN-stack based solution for monitoring and managing campus resources, energy usage, and sustainability metrics.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

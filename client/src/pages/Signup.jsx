@@ -60,7 +60,7 @@ const Signup = () => {
                         <UserPlus size={24} />
                     </div>
                     <h2 className="text-2xl font-bold text-slate-900">Create Account</h2>
-                    <p className="text-slate-500 text-sm mt-1">Join the SmartCampus community</p>
+                    <p className="text-slate-500 text-sm mt-1">Join the SmartCampusManagement community</p>
                 </div>
 
                 {error && (

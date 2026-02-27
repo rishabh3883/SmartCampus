@@ -44,7 +44,7 @@ const Login = () => {
                         <ShieldCheck size={24} />
                     </div>
                     <h2 className="text-2xl font-bold text-slate-900">Welcome Back</h2>
-                    <p className="text-slate-500 text-sm mt-1">Sign in to your SmartCampus account</p>
+                    <p className="text-slate-500 text-sm mt-1">Sign in to your SmartCampusManagement account</p>
                 </div>
 
                 {error && (

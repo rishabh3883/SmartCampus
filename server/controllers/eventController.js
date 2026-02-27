@@ -6,8 +6,8 @@ const emailService = require('../services/emailService');
 // --- Create Event (Admin) ---
 exports.createEvent = async (req, res) => {
     try {
-        const { title, description, date, venue, price, totalSeats, rules, organizer } = req.body;
-        const newEvent = new Event({ title, description, date, venue, price, totalSeats, rules, organizer });
+        const { title, description, date, venue, price, totalSeats, rules, organizer, category } = req.body;
+        const newEvent = new Event({ title, description, date, venue, price, totalSeats, rules, organizer, category });
         await newEvent.save();
         res.status(201).json(newEvent);
     } catch (err) {
@@ -23,6 +23,22 @@ exports.getAllEvents = async (req, res) => {
         res.json(events);
     } catch (err) {
         res.status(500).json({ message: "Failed to fetch events", error: err.message });
+    }
+};
+
+// --- Delete Event (Admin) ---
+exports.deleteEvent = async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const deletedEvent = await Event.findByIdAndDelete(eventId);
+        if (!deletedEvent) {
+            return res.status(404).json({ message: "Event not found" });
+        }
+        // Also delete associated bookings
+        await Booking.deleteMany({ eventId });
+        res.json({ message: "Event and associated bookings deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to delete event", error: err.message });
     }
 };
 

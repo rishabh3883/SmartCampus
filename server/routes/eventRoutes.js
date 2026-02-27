@@ -8,6 +8,7 @@ router.get('/', eventController.getAllEvents);
 
 // Protected (Admin)
 router.post('/', authMiddleware(['Admin']), eventController.createEvent);
+router.delete('/:eventId', authMiddleware(['Admin']), eventController.deleteEvent);
 router.get('/:eventId/attendees', authMiddleware(['Admin']), eventController.getEventAttendees);
 
 // Protected (Student/Staff)
