@@ -1,4 +1,4 @@
-# 🌱 Smart Campus Environmental Sustainability Dashboard
+# 🌱 Smart Campus Environmental Sustainability Dashboards
 
 > A MERN-stack based solution for monitoring and managing campus resources, energy usage, and sustainability metrics.
 
