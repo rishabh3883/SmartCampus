@@ -86,7 +86,7 @@ npm run dev
 3.  **Launch Frontend**: Open `http://localhost:5173`.
 4.  **Login**:
     *   **Admin**: `admin@university.edu` / `admin123` (Example)
-    *   **Student**: `student@university.edu` / `student123` (Example)
+    *   **Student**: `student@university.edu` / `student123` (Examples)
 
 ---
 
