@@ -1,5 +1,28 @@
 const Library = require('../models/Library');
 const LibraryBooking = require('../models/LibraryBooking');
+const LibrarySeat = require('../models/LibrarySeat');
+
+// --- Helper: Seed seats dynamically for a library if none exist ---
+const ensureSeatsExist = async (library) => {
+    const seatCount = await LibrarySeat.countDocuments({ library: library._id });
+    if (seatCount === 0) {
+        const seatsToCreate = [];
+        const numSeats = library.totalSeats || 12;
+        const libPrefix = library.name.replace(/[^a-zA-Z0-9]/g, '').substring(0, 4).toUpperCase() || 'LIB';
+
+        for (let i = 1; i <= numSeats; i++) {
+            const seatNum = `Seat ${String.fromCharCode(65 + Math.floor((i - 1) / 10))}-${(i - 1) % 10 + 1}`;
+            const seatCode = `${libPrefix}-SEAT-${i}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+            seatsToCreate.push({
+                library: library._id,
+                seatNumber: seatNum,
+                seatCode,
+                status: 'Vacant'
+            });
+        }
+        await LibrarySeat.insertMany(seatsToCreate);
+    }
+};
 
 // --- Admin: Create Library ---
 exports.createLibrary = async (req, res) => {
@@ -7,6 +30,7 @@ exports.createLibrary = async (req, res) => {
         const { name, totalSeats } = req.body;
         const library = new Library({ name, totalSeats });
         await library.save();
+        await ensureSeatsExist(library);
         res.status(201).json(library);
     } catch (err) {
         res.status(500).json({ message: "Failed to create library", error: err.message });
@@ -18,9 +42,9 @@ exports.deleteLibrary = async (req, res) => {
     try {
         const { id } = req.params;
         await Library.findByIdAndDelete(id);
-        // Should we cancel all active bookings for this library? Ideally yes.
         await LibraryBooking.updateMany({ library: id, status: 'Active' }, { status: 'Cancelled' });
-        res.json({ message: "Library deleted successfully" });
+        await LibrarySeat.deleteMany({ library: id });
+        res.json({ message: "Library and associated seats deleted successfully" });
     } catch (err) {
         res.status(500).json({ message: "Failed to delete library", error: err.message });
     }
@@ -30,11 +54,101 @@ exports.deleteLibrary = async (req, res) => {
 exports.getAllLibraries = async (req, res) => {
     try {
         const libraries = await Library.find();
-        // Calculate available seats dynamically if needed, 
-        // but for now we rely on the `bookedSeats` field in Library model which we'll keep in sync.
+        for (const lib of libraries) {
+            await ensureSeatsExist(lib);
+        }
         res.json(libraries);
     } catch (err) {
         res.status(500).json({ message: "Failed to fetch libraries", error: err.message });
+    }
+};
+
+// --- Get Seats for a Library ---
+exports.getLibrarySeats = async (req, res) => {
+    try {
+        const { libraryId } = req.params;
+        const library = await Library.findById(libraryId);
+        if (!library) return res.status(404).json({ message: "Library not found" });
+
+        await ensureSeatsExist(library);
+        const seats = await LibrarySeat.find({ library: libraryId }).sort({ seatNumber: 1 });
+        res.json({ library, seats });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to fetch seats", error: err.message });
+    }
+};
+
+// --- QR Scan Seat Toggle (Occupied <-> Vacant) ---
+exports.scanSeat = async (req, res) => {
+    try {
+        const { seatCode, seatId } = req.body;
+        const userId = req.user.id;
+        const userName = req.user.name || req.user.email || 'Student';
+
+        let query = {};
+        if (seatId) query._id = seatId;
+        else if (seatCode) query.seatCode = seatCode;
+        else return res.status(400).json({ message: "Seat ID or QR Seat Code is required." });
+
+        const seat = await LibrarySeat.findOne(query).populate('library');
+        if (!seat) return res.status(404).json({ message: "Invalid QR Code! Seat not found." });
+
+        const library = await Library.findById(seat.library);
+
+        let action = '';
+        let message = '';
+
+        if (seat.status === 'Vacant') {
+            // Mark Seat as Occupied
+            seat.status = 'Occupied';
+            seat.occupiedBy = userId;
+            seat.occupiedByName = userName;
+            seat.occupiedAt = new Date();
+            await seat.save();
+
+            // Update Library Occupied Count
+            const currentOccupied = await LibrarySeat.countDocuments({ library: seat.library._id, status: 'Occupied' });
+            if (library) {
+                library.bookedSeats = currentOccupied;
+                await library.save();
+            }
+
+            action = 'OCCUPIED';
+            message = `🎉 You have successfully occupied ${seat.seatNumber}! Enjoy your study session!`;
+        } else {
+            // Mark Seat as Vacant
+            seat.status = 'Vacant';
+            seat.occupiedBy = null;
+            seat.occupiedByName = null;
+            seat.occupiedAt = null;
+            await seat.save();
+
+            // Update Library Occupied Count
+            const currentOccupied = await LibrarySeat.countDocuments({ library: seat.library._id, status: 'Occupied' });
+            if (library) {
+                library.bookedSeats = Math.max(0, currentOccupied);
+                await library.save();
+            }
+
+            action = 'VACATED';
+            message = `✅ ${seat.seatNumber} is now VACANT! Thank you for leaving the seat clean!`;
+        }
+
+        // Notify via Socket.io if available
+        const io = req.app.get('socketio');
+        if (io) {
+            io.emit('seat-status-changed', {
+                libraryId: seat.library._id,
+                seatId: seat._id,
+                seatNumber: seat.seatNumber,
+                status: seat.status,
+                occupiedByName: seat.occupiedByName
+            });
+        }
+
+        res.json({ success: true, action, message, seat });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to process QR seat scan", error: err.message });
     }
 };
 
@@ -51,16 +165,14 @@ exports.getMyBooking = async (req, res) => {
 // --- Student: Book Slot ---
 exports.bookSlot = async (req, res) => {
     try {
-        const { libraryId, duration = 2 } = req.body; // Default 2 hours if not specified
+        const { libraryId, duration = 2 } = req.body;
         const userId = req.user.id;
 
-        // 1. Check if user already has an active booking
         const existingBooking = await LibraryBooking.findOne({ user: userId, status: 'Active' });
         if (existingBooking) {
             return res.status(400).json({ message: "You already have an active study slot booked." });
         }
 
-        // 2. Check Library Capacity (Atomic Check)
         const library = await Library.findById(libraryId);
         if (!library) return res.status(404).json({ message: "Library not found" });
 
@@ -68,7 +180,6 @@ exports.bookSlot = async (req, res) => {
             return res.status(400).json({ message: "Library is full." });
         }
 
-        // 3. Create Booking with End Time
         const startTime = new Date();
         const endTime = new Date(startTime.getTime() + duration * 60 * 60 * 1000);
 
@@ -81,7 +192,6 @@ exports.bookSlot = async (req, res) => {
         });
         await booking.save();
 
-        // 4. Update Library Count
         library.bookedSeats += 1;
         await library.save();
 
@@ -99,12 +209,10 @@ exports.cancelSlot = async (req, res) => {
 
         if (!booking) return res.status(404).json({ message: "No active booking found." });
 
-        // 1. Update Booking Status
         booking.status = 'Cancelled';
-        booking.endTime = Date.now(); // Override with actual end time
+        booking.endTime = Date.now();
         await booking.save();
 
-        // 2. Update Library Count
         const library = await Library.findById(booking.library);
         if (library) {
             library.bookedSeats = Math.max(0, library.bookedSeats - 1);

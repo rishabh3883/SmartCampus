@@ -1,6 +1,6 @@
 const Event = require('../models/Event');
 const Booking = require('../models/Booking');
-
+const User = require('../models/User');
 const emailService = require('../services/emailService');
 
 // --- Create Event (Admin) ---
@@ -11,7 +11,7 @@ exports.createEvent = async (req, res) => {
         await newEvent.save();
         res.status(201).json(newEvent);
     } catch (err) {
-        console.error("Error creating event:", err); // Log the error
+        console.error("Error creating event:", err);
         res.status(500).json({ message: "Failed to create event", error: err.message });
     }
 };
@@ -34,7 +34,6 @@ exports.deleteEvent = async (req, res) => {
         if (!deletedEvent) {
             return res.status(404).json({ message: "Event not found" });
         }
-        // Also delete associated bookings
         await Booking.deleteMany({ eventId });
         res.json({ message: "Event and associated bookings deleted successfully" });
     } catch (err) {
@@ -46,9 +45,8 @@ exports.deleteEvent = async (req, res) => {
 exports.bookEvent = async (req, res) => {
     try {
         const { eventId, paymentId } = req.body;
-        const userId = req.user.id; // From authMiddleware
+        const userId = req.user.id;
 
-        // Check Event Capacity
         const event = await Event.findById(eventId);
         if (!event) return res.status(404).json({ message: "Event not found" });
 
@@ -56,32 +54,43 @@ exports.bookEvent = async (req, res) => {
             return res.status(400).json({ message: "Event fully booked" });
         }
 
-        // Check if already booked
         const existingBooking = await Booking.findOne({ userId, eventId, status: 'Confirmed' });
         if (existingBooking) {
             return res.status(400).json({ message: "You have already booked this event" });
         }
 
-        // Create Booking
-        const qrCode = `PASS-${userId}-${eventId}-${Date.now()}`;
-        const booking = new Booking({ userId, eventId, paymentId, qrCode });
+        // Fetch User Details for Ticket
+        const user = await User.findById(userId);
+        const attendeeName = user ? user.name : (req.user.name || 'Student');
+        const attendeeEmail = user ? user.email : (req.user.email || 'N/A');
+        const enrollmentNumber = user ? (user.enrollmentNumber || user.employeeId || 'N/A') : 'N/A';
+
+        // Unique Scannable QR Code Token
+        const qrCode = `EVT-TICKET-${userId.toString().slice(-4)}-${eventId.toString().slice(-4)}-${Date.now()}`;
+
+        const booking = new Booking({
+            userId,
+            eventId,
+            paymentId,
+            qrCode,
+            attendeeName,
+            attendeeEmail,
+            enrollmentNumber
+        });
         await booking.save();
 
-        // Update Event Stats
         event.bookedSeats += 1;
         await event.save();
 
-        // Send Email Confirmation
-        const userEmail = req.user.email; // Assuming email is in the token payload or need to fetch user
-        // Fetch user details if not in token to be safe
-        const User = require('../models/User');
-        const user = await User.findById(userId);
-
-        if (user) {
-            await emailService.sendBookingConfirmation(user.email, user.name, event, booking);
+        if (user && user.email) {
+            try {
+                await emailService.sendBookingConfirmation(user.email, user.name, event, booking);
+            } catch (e) {
+                console.log("Email notification skipped:", e.message);
+            }
         }
 
-        res.status(201).json({ message: "Booking confirmed!", booking });
+        res.status(201).json({ message: "Booking confirmed! Digital pass generated.", booking });
     } catch (err) {
         res.status(500).json({ message: "Booking failed", error: err.message });
     }
@@ -90,21 +99,105 @@ exports.bookEvent = async (req, res) => {
 // --- Get My Bookings (Student) ---
 exports.getMyBookings = async (req, res) => {
     try {
-        const bookings = await Booking.find({ userId: req.user.id }).populate('eventId').sort({ createdAt: -1 });
+        const bookings = await Booking.find({ userId: req.user.id })
+            .populate('eventId')
+            .populate('userId', 'name email enrollmentNumber')
+            .sort({ createdAt: -1 });
         res.json(bookings);
     } catch (err) {
         res.status(500).json({ message: "Failed to fetch bookings", error: err.message });
     }
 };
 
-// --- Get Event Stats (Admin) ---
-// Optional: returns list of attendees
+// --- Venue Entry Verification via QR Code (Admin / Security / Organizer) ---
+exports.verifyEntry = async (req, res) => {
+    try {
+        const { qrCode } = req.body;
+        if (!qrCode) return res.status(400).json({ message: "QR Code payload is required." });
+
+        const booking = await Booking.findOne({ qrCode })
+            .populate('eventId')
+            .populate('userId', 'name email enrollmentNumber profilePicture');
+
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                message: "❌ INVALID PASS! No booking record found for this QR code."
+            });
+        }
+
+        if (booking.status !== 'Confirmed') {
+            return res.status(400).json({
+                success: false,
+                message: `❌ ENTRY DENIED! Ticket status is ${booking.status}.`
+            });
+        }
+
+        if (booking.attended) {
+            return res.status(400).json({
+                success: false,
+                alreadyUsed: true,
+                message: `⚠️ ALREADY CHECKED IN! ${booking.attendeeName || 'Attendee'} checked in at ${new Date(booking.attendedAt).toLocaleTimeString()}.`,
+                booking
+            });
+        }
+
+        // Grant Entry & Mark Attended
+        booking.attended = true;
+        booking.attendedAt = new Date();
+        await booking.save();
+
+        res.json({
+            success: true,
+            message: `🎉 ENTRY GRANTED! Welcome ${booking.attendeeName || 'Attendee'} to ${booking.eventId?.title || 'Event'}!`,
+            booking
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to verify entry QR code", error: err.message });
+    }
+};
+
+// --- Get Event Attendees & Detailed Attendance Report (Admin / Organizer) ---
 exports.getEventAttendees = async (req, res) => {
     try {
         const { eventId } = req.params;
-        const bookings = await Booking.find({ eventId }).populate('userId', 'name email enrollmentNumber');
+        const bookings = await Booking.find({ eventId })
+            .populate('userId', 'name email enrollmentNumber profilePicture')
+            .sort({ createdAt: -1 });
         res.json(bookings);
     } catch (err) {
         res.status(500).json({ message: "Failed to fetch attendees", error: err.message });
+    }
+};
+
+// --- Get Detailed Attendance Analytics & Reports (Admin / Organizer) ---
+exports.getEventReports = async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const event = await Event.findById(eventId);
+        if (!event) return res.status(404).json({ message: "Event not found" });
+
+        const bookings = await Booking.find({ eventId })
+            .populate('userId', 'name email enrollmentNumber')
+            .sort({ attendedAt: -1, createdAt: -1 });
+
+        const totalRegistered = bookings.length;
+        const presentCount = bookings.filter(b => b.attended).length;
+        const absentCount = totalRegistered - presentCount;
+        const attendancePercentage = totalRegistered > 0 ? Math.round((presentCount / totalRegistered) * 100) : 0;
+
+        res.json({
+            event,
+            summary: {
+                capacity: event.totalSeats,
+                totalRegistered,
+                presentCount,
+                absentCount,
+                attendancePercentage
+            },
+            attendees: bookings
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to generate attendance report", error: err.message });
     }
 };

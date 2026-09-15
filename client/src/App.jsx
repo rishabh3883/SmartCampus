@@ -4,6 +4,8 @@ import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Landing from './pages/Landing';
+import ResumeAnalyzer from './pages/ResumeAnalyzer';
+import CoPay from './pages/CoPay';
 import StudentDashboard from './pages/student/Dashboard';
 import AdminDashboard from './pages/admin/Dashboard';
 import EmployeeDashboard from './pages/employee/Dashboard';
@@ -24,6 +26,8 @@ import AdminModeration from './pages/admin/AdminModeration';
 
 import EmergencyModal from './components/EmergencyModal';
 
+import SectionAttendanceReports from './pages/admin/SectionAttendanceReports';
+
 function App() {
   return (
     <AuthProvider>
@@ -33,6 +37,8 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/resume-analyzer" element={<ResumeAnalyzer />} />
+          <Route path="/copay" element={<CoPay />} />
 
 
 
@@ -46,7 +52,7 @@ function App() {
           </Route>
 
           {/* Admin Routes */}
-          <Route element={<ProtectedRoute roles={['Admin']} />}>
+          <Route element={<ProtectedRoute roles={['Admin', 'Employee']} />}>
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/events" element={<AdminEvents />} />
             <Route path="/admin/library" element={<AdminLibrary />} />
@@ -54,6 +60,7 @@ function App() {
             <Route path="/admin/environment" element={<AdminEnvironment />} />
             <Route path="/admin/timetable" element={<AdminTimetable />} />
             <Route path="/admin/social-moderation" element={<AdminModeration />} />
+            <Route path="/admin/attendance-reports" element={<SectionAttendanceReports />} />
           </Route>
 
           {/* Employee Routes */}

@@ -68,6 +68,7 @@ app.use('/api/library-analytics', require('./routes/libraryAnalyticsRoutes'));
 app.use('/api/library-logs', require('./routes/libraryLogRoutes'));
 app.use('/api/social', require('./routes/socialRoutes'));
 app.use('/api/chat', require('./routes/chatRoutes'));
+app.use('/api/attendance', require('./routes/attendanceRoutes'));
 
 // ===== Background Jobs =====
 const libraryController = require('./controllers/libraryController');

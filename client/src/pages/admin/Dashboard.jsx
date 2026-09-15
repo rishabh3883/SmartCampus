@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/Navbar';
 import API from '../../services/api';
-import { AlertTriangle, Droplets, Zap, PieChart as PieIcon, CheckCircle, XCircle, Clock, FileText, Send, BookOpen, Calendar, Activity, Shield, Users, UserMinus, UserCheck, Cpu, TrendingUp, LayoutDashboard, Radio, LogOut } from 'lucide-react';
+import { AlertTriangle, Droplets, Zap, PieChart as PieIcon, CheckCircle, XCircle, Clock, FileText, Send, BookOpen, Calendar, Activity, Shield, Users, UserMinus, UserCheck, Cpu, TrendingUp, LayoutDashboard, Radio, LogOut, FileSpreadsheet } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import InsightsWidget from '../../components/InsightsWidget';
 
@@ -46,6 +46,7 @@ const Sidebar = ({ activeTab, setActiveTab, complaintsCount, usersCount }) => {
                 <QuickLink href="/admin/library" icon={BookOpen} label="Library" />
                 <QuickLink href="/admin/events" icon={Calendar} label="Events" />
                 <QuickLink href="/admin/timetable" icon={Clock} label="Timetable" />
+                <QuickLink href="/admin/attendance-reports" icon={FileSpreadsheet} label="Attendance Excel" />
                 <QuickLink href="/admin/reports" icon={FileText} label="Reports" />
                 <QuickLink href="/admin/environment" icon={Cpu} label="AI Observer" />
                 <QuickLink href="/admin/social-moderation" icon={Shield} label="Social Mod" />
