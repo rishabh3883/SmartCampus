@@ -26,6 +26,8 @@ import EmergencyModal from './components/EmergencyModal';
 
 import SectionAttendanceReports from './pages/admin/SectionAttendanceReports';
 
+import ScanSeat from './pages/ScanSeat';
+
 function App() {
   return (
     <AuthProvider>
@@ -36,6 +38,7 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/scan-seat" element={<ScanSeat />} />
 
 
 

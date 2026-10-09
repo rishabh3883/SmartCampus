@@ -141,11 +141,17 @@ const StudentLibrary = ({ isEmbedded = false }) => {
                     </div>
 
                     <div className="relative z-10 flex flex-wrap gap-3">
+                        <Link
+                            to="/scan-seat"
+                            className="bg-white hover:bg-slate-100 text-slate-900 font-extrabold px-5 py-3 rounded-2xl transition-all shadow-lg flex items-center gap-2 hover:scale-105 active:scale-95"
+                        >
+                            <Scan size={20} className="text-emerald-600" /> Mobile Camera Scan
+                        </Link>
                         <button
                             onClick={() => { setShowScannerModal(true); setScanMessage(null); }}
                             className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-3 rounded-2xl transition-all shadow-lg shadow-emerald-500/30 flex items-center gap-2 hover:scale-105 active:scale-95"
                         >
-                            <Scan size={20} /> Open QR Scanner
+                            <QrCode size={20} /> Quick Scan / Code
                         </button>
                     </div>
                 </div>
@@ -354,7 +360,7 @@ const StudentLibrary = ({ isEmbedded = false }) => {
                             {/* QR Code Box */}
                             <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 inline-block shadow-inner">
                                 <QRCodeSVG
-                                    value={activeQrModal.seatCode}
+                                    value={`${window.location.origin}/scan-seat?code=${encodeURIComponent(activeQrModal.seatCode)}`}
                                     size={180}
                                     level="H"
                                     includeMargin={true}
@@ -362,8 +368,10 @@ const StudentLibrary = ({ isEmbedded = false }) => {
                             </div>
 
                             <div className="bg-slate-100 p-3 rounded-xl text-left text-xs font-mono space-y-1">
-                                <p className="text-slate-500 font-sans font-bold">QR Payload / Code:</p>
-                                <p className="text-slate-900 font-bold select-all break-all">{activeQrModal.seatCode}</p>
+                                <p className="text-slate-500 font-sans font-bold">Desk Sticker URL:</p>
+                                <p className="text-emerald-700 font-bold select-all break-all text-[11px]">
+                                    {`${window.location.origin}/scan-seat?code=${activeQrModal.seatCode}`}
+                                </p>
                             </div>
 
                             <button

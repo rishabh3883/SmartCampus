@@ -286,10 +286,26 @@ const AdminLibrary = () => {
                             </select>
                         </div>
 
+                        {/* Bulk Print Sheet / Action Bar */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-emerald-50/50 border border-emerald-200/80 rounded-2xl">
+                            <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
+                                <Sparkles size={16} className="text-emerald-600" />
+                                <span>Desk Sticker QR Generation: Scan with any mobile camera to instantly occupy or vacate.</span>
+                            </div>
+                            <button
+                                onClick={() => window.print()}
+                                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
+                            >
+                                <Scan size={14} /> Print All {seats.length} Seat Stickers
+                            </button>
+                        </div>
+
                         {/* Seat Cards Grid */}
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                             {seats.map(seat => {
                                 const isOccupied = seat.status === 'Occupied';
+                                const seatUrl = `${window.location.origin}/scan-seat?code=${encodeURIComponent(seat.seatCode)}`;
+
                                 return (
                                     <div
                                         key={seat._id}
@@ -313,13 +329,13 @@ const AdminLibrary = () => {
                                         <div className="space-y-1.5 pt-2 border-t border-slate-200/60">
                                             <button
                                                 onClick={() => setSelectedQrSeat(seat)}
-                                                className="w-full text-[11px] font-bold py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg flex items-center justify-center gap-1"
+                                                className="w-full text-[11px] font-bold py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg flex items-center justify-center gap-1 shadow-2xs"
                                             >
-                                                <QrCode size={12} /> View QR
+                                                <QrCode size={12} className="text-emerald-600" /> Desk Sticker QR
                                             </button>
                                             <button
                                                 onClick={() => handleToggleSeat(seat.seatCode)}
-                                                className={`w-full text-[11px] font-black py-1.5 text-white rounded-lg transition-all ${
+                                                className={`w-full text-[11px] font-black py-1.5 text-white rounded-lg transition-all shadow-2xs ${
                                                     isOccupied ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700'
                                                 }`}
                                             >
@@ -335,8 +351,8 @@ const AdminLibrary = () => {
 
                 {/* Printable QR Code Modal */}
                 {selectedQrSeat && (
-                    <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-                        <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center space-y-6 relative border border-slate-200">
+                    <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+                        <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl text-center space-y-5 relative border border-slate-200">
                             <button
                                 onClick={() => setSelectedQrSeat(null)}
                                 className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full"
@@ -344,25 +360,78 @@ const AdminLibrary = () => {
                                 <XCircle size={20} />
                             </button>
 
-                            <div>
-                                <span className="bg-emerald-100 text-emerald-800 text-xs font-black px-3 py-1 rounded-full uppercase">
-                                    {selectedQrSeat.seatNumber}
-                                </span>
-                                <h3 className="text-2xl font-black text-slate-900 mt-2">Printable Seat QR</h3>
+                            {/* Desk Sticker Card Content */}
+                            <div id="printable-seat-sticker" className="bg-gradient-to-b from-emerald-50 via-white to-slate-50 border-2 border-emerald-500/40 rounded-3xl p-5 shadow-inner space-y-4 text-center">
+                                <div className="space-y-1">
+                                    <div className="inline-flex items-center gap-1.5 bg-emerald-600 text-white text-[10px] font-extrabold px-3 py-0.5 rounded-full uppercase tracking-wider">
+                                        <Sparkles size={11} /> Smart Campus Library
+                                    </div>
+                                    <h4 className="text-xl font-black text-slate-900 tracking-tight">
+                                        {selectedQrSeat.seatNumber}
+                                    </h4>
+                                    <p className="text-[11px] font-semibold text-slate-500">
+                                        {selectedLib?.name || 'Central Library'}
+                                    </p>
+                                </div>
+
+                                <div className="bg-white p-4 rounded-2xl border border-slate-200 inline-block shadow-md">
+                                    <QRCodeSVG
+                                        id="seat-qr-svg"
+                                        value={`${window.location.origin}/scan-seat?code=${encodeURIComponent(selectedQrSeat.seatCode)}`}
+                                        size={180}
+                                        level="H"
+                                        includeMargin={true}
+                                    />
+                                </div>
+
+                                <div className="space-y-1">
+                                    <p className="text-xs font-extrabold text-emerald-800">
+                                        📱 Scan with Mobile Camera
+                                    </p>
+                                    <p className="text-[10px] text-slate-500 font-medium">
+                                        Auto-books or vacates this seat immediately
+                                    </p>
+                                    <p className="font-mono text-[9px] text-slate-400 select-all pt-1">
+                                        Code: {selectedQrSeat.seatCode}
+                                    </p>
+                                </div>
                             </div>
 
-                            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 inline-block shadow-inner">
-                                <QRCodeSVG
-                                    value={selectedQrSeat.seatCode}
-                                    size={180}
-                                    level="H"
-                                    includeMargin={true}
-                                />
-                            </div>
-
-                            <div className="bg-slate-100 p-3 rounded-xl text-left text-xs font-mono">
-                                <p className="text-slate-500 font-sans font-bold">QR Payload Code:</p>
-                                <p className="text-slate-900 font-bold select-all break-all">{selectedQrSeat.seatCode}</p>
+                            {/* Action buttons */}
+                            <div className="grid grid-cols-2 gap-2 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const svg = document.getElementById("seat-qr-svg");
+                                        if (svg) {
+                                            const svgData = new XMLSerializer().serializeToString(svg);
+                                            const canvas = document.createElement("canvas");
+                                            const ctx = canvas.getContext("2d");
+                                            const img = new Image();
+                                            img.onload = () => {
+                                                canvas.width = img.width;
+                                                canvas.height = img.height;
+                                                ctx.drawImage(img, 0, 0);
+                                                const pngFile = canvas.toDataURL("image/png");
+                                                const downloadLink = document.createElement("a");
+                                                downloadLink.download = `${selectedQrSeat.seatNumber}-QR.png`;
+                                                downloadLink.href = pngFile;
+                                                downloadLink.click();
+                                            };
+                                            img.src = "data:image/svg+xml;base64," + btoa(svgData);
+                                        }
+                                    }}
+                                    className="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl transition-all"
+                                >
+                                    Download PNG
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => window.print()}
+                                    className="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all"
+                                >
+                                    Print Sticker
+                                </button>
                             </div>
                         </div>
                     </div>

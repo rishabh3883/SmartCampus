@@ -78,12 +78,26 @@ exports.getLibrarySeats = async (req, res) => {
     }
 };
 
+// --- Get Single Seat info by Code (Public) ---
+exports.getSeatByCode = async (req, res) => {
+    try {
+        const { seatCode } = req.params;
+        const seat = await LibrarySeat.findOne({ seatCode }).populate('library');
+        if (!seat) {
+            return res.status(404).json({ message: "Invalid QR Code: Seat not found." });
+        }
+        res.json({ seat, library: seat.library });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to fetch seat details", error: err.message });
+    }
+};
+
 // --- QR Scan Seat Toggle (Occupied <-> Vacant) ---
 exports.scanSeat = async (req, res) => {
     try {
-        const { seatCode, seatId } = req.body;
-        const userId = req.user.id;
-        const userName = req.user.name || req.user.email || 'Student';
+        const { seatCode, seatId, studentName, enrollmentNumber, actionType } = req.body;
+        const userId = req.user?.id || null;
+        let userName = req.user?.name || req.user?.email || studentName || (enrollmentNumber ? `Student (${enrollmentNumber})` : 'Campus Student');
 
         let query = {};
         if (seatId) query._id = seatId;
@@ -98,7 +112,7 @@ exports.scanSeat = async (req, res) => {
         let action = '';
         let message = '';
 
-        if (seat.status === 'Vacant') {
+        if (seat.status === 'Vacant' || actionType === 'OCCUPY') {
             // Mark Seat as Occupied
             seat.status = 'Occupied';
             seat.occupiedBy = userId;
@@ -114,7 +128,7 @@ exports.scanSeat = async (req, res) => {
             }
 
             action = 'OCCUPIED';
-            message = `🎉 You have successfully occupied ${seat.seatNumber}! Enjoy your study session!`;
+            message = `🎉 You have successfully occupied ${seat.seatNumber} (${library?.name || 'Library'})! Enjoy your study session!`;
         } else {
             // Mark Seat as Vacant
             seat.status = 'Vacant';
@@ -146,7 +160,7 @@ exports.scanSeat = async (req, res) => {
             });
         }
 
-        res.json({ success: true, action, message, seat });
+        res.json({ success: true, action, message, seat, library });
     } catch (err) {
         res.status(500).json({ message: "Failed to process QR seat scan", error: err.message });
     }
