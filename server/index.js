@@ -44,7 +44,18 @@ app.get("/", (req, res) => {
 
 // ===== Database =====
 const connectDB = require('./config/db');
-connectDB();
+connectDB().catch(err => console.log("Initial DB connect note:", err.message));
+
+// Middleware to ensure DB connection is ready before handling requests
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error("Database connection error on request:", err.message);
+    return res.status(500).json({ message: "Database connection failed. Please verify MONGO_URI in environment variables." });
+  }
+});
 
 // ===== Routes =====
 app.use('/api/auth', require('./routes/authRoutes'));
