@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/Navbar';
 import API from '../../services/api';
 import { SERVER_URL } from '../../config';
-import { AlertTriangle, Droplets, Zap, PieChart as PieIcon, CheckCircle, XCircle, Clock, FileText, Send, BookOpen, Calendar, Activity, Shield, Users, UserMinus, UserCheck, Cpu, TrendingUp, LayoutDashboard, Radio, LogOut, FileSpreadsheet } from 'lucide-react';
+import { AlertTriangle, Droplets, Zap, PieChart as PieIcon, CheckCircle, XCircle, Clock, FileText, Send, BookOpen, Calendar, Activity, Shield, Users, UserMinus, UserCheck, Cpu, TrendingUp, LayoutDashboard, Radio, LogOut, FileSpreadsheet, Scan } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import InsightsWidget from '../../components/InsightsWidget';
 
@@ -46,8 +46,9 @@ const Sidebar = ({ activeTab, setActiveTab, complaintsCount, usersCount }) => {
                 <div className="my-6 border-t border-slate-100 mx-2"></div>
 
                 <p className="px-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Quick Access</p>
-                <QuickLink href="/admin/library" icon={BookOpen} label="Library" />
-                <QuickLink href="/admin/events" icon={Calendar} label="Events" />
+                <QuickLink href="/admin/library" icon={BookOpen} label="Library & Seat QRs" />
+                <QuickLink href="/admin/events" icon={Calendar} label="Events & Gate Pass" />
+                <QuickLink href="/scan-seat" icon={Scan} label="Live QR Scanner" />
                 <QuickLink href="/admin/timetable" icon={Clock} label="Timetable" />
                 <QuickLink href="/admin/attendance-reports" icon={FileSpreadsheet} label="Attendance Excel" />
                 <QuickLink href="/admin/reports" icon={FileText} label="Reports" />

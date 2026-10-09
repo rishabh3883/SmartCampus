@@ -226,9 +226,12 @@ const AdminEvents = () => {
                 {/* Gate Entry Scanner Modal */}
                 {showScannerModal && (
                     <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-                        <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 relative border border-slate-200">
+                        <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-6 relative border border-slate-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
                             <button
-                                onClick={() => setShowScannerModal(false)}
+                                onClick={() => {
+                                    setShowScannerModal(false);
+                                    setScanResult(null);
+                                }}
                                 className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full"
                             >
                                 <X size={20} />
@@ -238,25 +241,49 @@ const AdminEvents = () => {
                                 <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
                                     <Scan size={32} />
                                 </div>
-                                <h3 className="text-2xl font-black text-slate-900">Event Gate QR Scanner</h3>
+                                <h3 className="text-2xl font-black text-slate-900">Admin Gate QR Scanner</h3>
                                 <p className="text-slate-500 text-xs mt-1">
-                                    Scan or input student ticket QR code to grant venue entry.
+                                    Scan or input student ticket QR code to verify genuinity and grant venue entry.
                                 </p>
                             </div>
 
                             {scanResult && (
-                                <div className={`p-4 rounded-2xl text-xs font-bold space-y-2 border ${
-                                    scanResult.success ? 'bg-emerald-50 text-emerald-900 border-emerald-200' : 'bg-rose-50 text-rose-900 border-rose-200'
+                                <div className={`p-5 rounded-2xl text-xs font-bold space-y-3 border transition-all shadow-md ${
+                                    scanResult.success 
+                                        ? 'bg-emerald-50 text-emerald-950 border-emerald-300' 
+                                        : scanResult.isDuplicate 
+                                            ? 'bg-amber-50 text-amber-950 border-amber-300' 
+                                            : 'bg-rose-50 text-rose-950 border-rose-300'
                                 }`}>
-                                    <div className="flex items-center gap-2 text-sm font-black">
-                                        {scanResult.success ? <CheckCircle size={18} className="text-emerald-600" /> : <AlertCircle size={18} className="text-rose-600" />}
-                                        <span>{scanResult.message}</span>
+                                    <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
+                                        <div className="flex items-center gap-2">
+                                            {scanResult.success ? <CheckCircle size={20} className="text-emerald-600" /> : <AlertCircle size={20} className="text-rose-600" />}
+                                            <span className="text-xs uppercase font-black">
+                                                {scanResult.success ? '🟢 100% GENUINE & VALID PASS' : scanResult.isDuplicate ? '⚠️ DUPLICATE ENTRY DETECTED' : '🚨 COUNTERFEIT / INVALID QR'}
+                                            </span>
+                                        </div>
                                     </div>
+
+                                    <p className="text-xs font-semibold">{scanResult.message}</p>
+
                                     {scanResult.booking && (
-                                        <div className="bg-white/80 p-3 rounded-xl text-slate-700 space-y-1 font-mono text-[11px] border border-slate-200">
-                                            <p><span className="font-sans font-bold">Attendee:</span> {scanResult.booking.attendeeName || scanResult.booking.userId?.name}</p>
-                                            <p><span className="font-sans font-bold">Roll / ID:</span> {scanResult.booking.enrollmentNumber || scanResult.booking.userId?.enrollmentNumber || 'N/A'}</p>
-                                            <p><span className="font-sans font-bold">Event:</span> {scanResult.booking.eventId?.title}</p>
+                                        <div className="bg-white/90 p-4 rounded-xl text-slate-800 space-y-2 text-[11px] border border-slate-200">
+                                            <div className="flex justify-between">
+                                                <span className="text-slate-500 font-bold">Attendee Name:</span>
+                                                <span className="font-extrabold text-slate-900">{scanResult.booking.attendeeName || scanResult.booking.userId?.name || 'Registered Student'}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-slate-500 font-bold">Roll No / ID:</span>
+                                                <span className="font-mono font-bold text-slate-800">{scanResult.booking.enrollmentNumber || scanResult.booking.userId?.enrollmentNumber || 'PU-STUDENT'}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-slate-500 font-bold">Event Name:</span>
+                                                <span className="font-extrabold text-slate-900">{scanResult.booking.eventId?.title || 'Campus Event'}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-slate-500 font-bold">Ticket Code:</span>
+                                                <code className="font-mono text-emerald-700 font-bold">{scanResult.booking.qrCode}</code>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -277,6 +304,7 @@ const AdminEvents = () => {
                                         value={qrCodeInput}
                                         onChange={(e) => setQrCodeInput(e.target.value)}
                                         className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl font-mono text-sm focus:outline-none focus:border-emerald-500"
+                                        autoFocus
                                     />
                                 </div>
 
@@ -285,7 +313,14 @@ const AdminEvents = () => {
                                     disabled={scanLoading || !qrCodeInput.trim()}
                                     className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-sm transition-all shadow-md flex items-center justify-center gap-2"
                                 >
-                                    <Scan size={18} /> Verify Ticket & Grant Entry
+                                    {scanLoading ? (
+                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    ) : (
+                                        <>
+                                            <Scan size={18} />
+                                            <span>Verify Pass & Authenticate Entry</span>
+                                        </>
+                                    )}
                                 </button>
                             </form>
                         </div>
