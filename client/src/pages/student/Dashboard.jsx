@@ -282,22 +282,35 @@ const StudentDashboard = () => {
                                 {/* Library Quick View */}
                                 <div className="space-y-4">
                                     <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2"><BookOpen size={18} /> Library Status</h3>
-                                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-emerald-200 transition-colors cursor-pointer" onClick={() => setActiveTab('library')}>
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full blur-3xl -mr-10 -mt-10 opacity-60"></div>
-                                        <div className="relative z-10">
-                                            <p className="text-sm font-medium text-slate-500 mb-1">Seats Available</p>
-                                            <div className="flex items-end gap-2 mb-3">
-                                                <span className="text-5xl font-black text-emerald-600">{library.totalSeats - library.occupiedSeats}</span>
-                                                <span className="text-lg font-bold text-slate-400 mb-1">/ {library.totalSeats}</span>
+                                    {(() => {
+                                        const totSeats = Array.isArray(library) 
+                                            ? library.reduce((acc, l) => acc + (l.totalSeats || 0), 0) || 12 
+                                            : (library?.totalSeats || 100);
+                                        const occSeats = Array.isArray(library) 
+                                            ? library.reduce((acc, l) => acc + (l.bookedSeats || l.occupiedSeats || 0), 0) 
+                                            : (library?.occupiedSeats || 0);
+                                        const availSeats = Math.max(0, totSeats - occSeats);
+                                        const percent = Math.min(100, Math.round((occSeats / totSeats) * 100));
+
+                                        return (
+                                            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-emerald-200 transition-colors cursor-pointer" onClick={() => setActiveTab('library')}>
+                                                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full blur-3xl -mr-10 -mt-10 opacity-60"></div>
+                                                <div className="relative z-10">
+                                                    <p className="text-sm font-medium text-slate-500 mb-1">Seats Available</p>
+                                                    <div className="flex items-end gap-2 mb-3">
+                                                        <span className="text-5xl font-black text-emerald-600">{availSeats}</span>
+                                                        <span className="text-lg font-bold text-slate-400 mb-1">/ {totSeats}</span>
+                                                    </div>
+                                                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                                        <div className="bg-emerald-500 h-full transition-all duration-1000" style={{ width: `${percent}%` }}></div>
+                                                    </div>
+                                                    <p className="text-xs text-emerald-600 font-bold mt-2 flex items-center gap-1">
+                                                        <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Live Updates • Click to Open Library
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                                <div className="bg-emerald-500 h-full transition-all duration-1000" style={{ width: `${(library.occupiedSeats / library.totalSeats) * 100}%` }}></div>
-                                            </div>
-                                            <p className="text-xs text-emerald-600 font-bold mt-2 flex items-center gap-1">
-                                                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div> Live Updates
-                                            </p>
-                                        </div>
-                                    </div>
+                                        );
+                                    })()}
 
                                     <button onClick={handleEmergency} className="w-full py-4 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl font-bold border border-rose-200 flex items-center justify-center gap-2 transition-colors">
                                         <AlertTriangle size={20} /> Emergency SOS
