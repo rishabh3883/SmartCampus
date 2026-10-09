@@ -46,14 +46,17 @@ app.get("/", (req, res) => {
 const connectDB = require('./config/db');
 connectDB().catch(err => console.log("Initial DB connect note:", err.message));
 
-// Middleware to ensure DB connection is ready before handling requests
 app.use(async (req, res, next) => {
   try {
     await connectDB();
     next();
   } catch (err) {
     console.error("Database connection error on request:", err.message);
-    return res.status(500).json({ message: "Database connection failed. Please verify MONGO_URI in environment variables." });
+    return res.status(500).json({ 
+      message: "Database connection failed", 
+      error: err.message,
+      hint: "Ensure MongoDB Atlas Network Access allows 0.0.0.0/0 for serverless deployments."
+    });
   }
 });
 
