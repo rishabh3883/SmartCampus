@@ -82,10 +82,12 @@ app.use('/api/chat', require('./routes/chatRoutes'));
 app.use('/api/attendance', require('./routes/attendanceRoutes'));
 
 // ===== Background Jobs =====
-const libraryController = require('./controllers/libraryController');
-setInterval(() => {
-  libraryController.checkExpiredBookings();
-}, 60000); // Check every 60 seconds
+if (!process.env.VERCEL) {
+  const libraryController = require('./controllers/libraryController');
+  setInterval(() => {
+    libraryController.checkExpiredBookings();
+  }, 60000); // Check every 60 seconds
+}
 
 // ===== Socket connection =====
 io.on('connection', (socket) => {
