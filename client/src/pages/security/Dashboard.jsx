@@ -3,8 +3,9 @@ import Navbar from '../../components/Navbar';
 import API from '../../services/api';
 import { 
     AlertTriangle, Shield, CheckCircle, Clock, Siren, 
-    Scan, UserCheck, Search, AlertCircle, XCircle, Ticket, Calendar, MapPin, User
+    Scan, UserCheck, Search, AlertCircle, XCircle, Ticket, Calendar, MapPin, User, Camera
 } from 'lucide-react';
+import CameraQrScannerModal from '../../components/CameraQrScannerModal';
 
 const SecurityDashboard = () => {
     const [activeTab, setActiveTab] = useState('emergency'); // 'emergency' | 'events'
@@ -16,8 +17,7 @@ const SecurityDashboard = () => {
     const [scanLoading, setScanLoading] = useState(false);
     const [scanResult, setScanResult] = useState(null);
     const [recentCheckIns, setRecentCheckIns] = useState([]);
-    const [isCameraActive, setIsCameraActive] = useState(false);
-    const videoRef = React.useRef(null);
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
 
     useEffect(() => {
         fetchAlarms();
@@ -54,26 +54,9 @@ const SecurityDashboard = () => {
         }
     };
 
-    const toggleCamera = async () => {
-        if (isCameraActive) {
-            if (videoRef.current && videoRef.current.srcObject) {
-                const tracks = videoRef.current.srcObject.getTracks();
-                tracks.forEach(track => track.stop());
-            }
-            setIsCameraActive(false);
-        } else {
-            try {
-                setIsCameraActive(true);
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                }
-            } catch (err) {
-                console.warn('Camera access unavailable:', err);
-                setIsCameraActive(false);
-                alert('Camera stream unavailable. You can enter or paste the Pass QR code directly.');
-            }
-        }
+    const handleCameraScanSuccess = (decodedCode) => {
+        setTicketInput(decodedCode);
+        handleVerifyCode(decodedCode);
     };
 
     const handleVerifyCode = async (codeToVerify) => {
@@ -306,24 +289,22 @@ const SecurityDashboard = () => {
 
                                 <button
                                     type="button"
-                                    onClick={toggleCamera}
-                                    className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all"
+                                    onClick={() => setIsScannerOpen(true)}
+                                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all"
                                 >
-                                    <Scan size={15} className="text-emerald-400" />
-                                    <span>{isCameraActive ? 'Close Camera' : 'Live Camera Scanner'}</span>
+                                    <Camera size={15} />
+                                    <span>Open Live QR Scanner</span>
                                 </button>
                             </div>
 
-                            {/* Camera Video Viewport */}
-                            {isCameraActive && (
-                                <div className="rounded-2xl overflow-hidden border-2 border-emerald-500/40 relative bg-black aspect-video max-w-md mx-auto flex items-center justify-center shadow-lg">
-                                    <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
-                                    <div className="absolute inset-4 border-2 border-emerald-400/80 rounded-2xl pointer-events-none animate-pulse"></div>
-                                    <div className="absolute bottom-3 bg-black/80 px-3.5 py-1 rounded-full text-[11px] text-white font-medium">
-                                        Point camera at student's Event QR Pass
-                                    </div>
-                                </div>
-                            )}
+                            {/* Camera QR Scanner Modal */}
+                            <CameraQrScannerModal
+                                isOpen={isScannerOpen}
+                                onClose={() => setIsScannerOpen(false)}
+                                onScanSuccess={handleCameraScanSuccess}
+                                title="Gate Pass QR Scanner"
+                                description="Scan student or visitor event QR ticket for instant verification"
+                            />
 
                             {/* Input Form */}
                             <form onSubmit={handleVerifyTicket} className="flex flex-col sm:flex-row gap-3">

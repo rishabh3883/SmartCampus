@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import API from '../../services/api';
 import { QRCodeSVG } from 'qrcode.react';
-import { BookOpen, MapPin, Users, Plus, Trash2, Library, Search, QrCode, Scan, RefreshCw, Sparkles, CheckCircle, XCircle } from 'lucide-react';
+import { BookOpen, MapPin, Users, Plus, Trash2, Library, Search, QrCode, Scan, RefreshCw, Sparkles, CheckCircle, XCircle, Camera } from 'lucide-react';
+import CameraQrScannerModal from '../../components/CameraQrScannerModal';
 
 const AdminLibrary = () => {
     const [libraries, setLibraries] = useState([]);
@@ -12,6 +13,7 @@ const AdminLibrary = () => {
     const [formData, setFormData] = useState({ name: '', totalSeats: '12' });
     const [loading, setLoading] = useState(false);
     const [selectedQrSeat, setSelectedQrSeat] = useState(null);
+    const [showCameraScanner, setShowCameraScanner] = useState(false);
 
     useEffect(() => {
         fetchLibraries();
@@ -127,6 +129,12 @@ const AdminLibrary = () => {
                             }`}
                         >
                             <QrCode size={16} /> Seat QR Manager
+                        </button>
+                        <button
+                            onClick={() => setShowCameraScanner(true)}
+                            className="px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20"
+                        >
+                            <Camera size={16} /> Live Desk Scanner
                         </button>
                         <button
                             onClick={() => setActiveTab('create')}
@@ -436,6 +444,17 @@ const AdminLibrary = () => {
                         </div>
                     </div>
                 )}
+
+                {/* Camera QR Scanner Modal */}
+                <CameraQrScannerModal
+                    isOpen={showCameraScanner}
+                    onClose={() => setShowCameraScanner(false)}
+                    onScanSuccess={(code) => {
+                        handleToggleSeat(code);
+                    }}
+                    title="Scan Library Desk QR"
+                    description="Point camera at desk QR code to inspect or toggle seat status"
+                />
 
             </div>
         </div>

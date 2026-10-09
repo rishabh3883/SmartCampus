@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import API from '../../services/api';
-import { Calendar, MapPin, DollarSign, Users, Plus, List, X, Mail, Search, Scan, CheckCircle, AlertCircle, BarChart3, FileSpreadsheet, ShieldCheck, UserCheck } from 'lucide-react';
+import { Calendar, MapPin, DollarSign, Users, Plus, List, X, Mail, Search, Scan, CheckCircle, AlertCircle, BarChart3, FileSpreadsheet, ShieldCheck, UserCheck, Camera } from 'lucide-react';
+import CameraQrScannerModal from '../../components/CameraQrScannerModal';
 
 const AdminEvents = () => {
     const [events, setEvents] = useState([]);
@@ -12,6 +13,7 @@ const AdminEvents = () => {
 
     // Scanner Modal
     const [showScannerModal, setShowScannerModal] = useState(false);
+    const [showCameraScanner, setShowCameraScanner] = useState(false);
     const [qrCodeInput, setQrCodeInput] = useState('');
     const [scanResult, setScanResult] = useState(null);
     const [scanLoading, setScanLoading] = useState(false);
@@ -296,8 +298,18 @@ const AdminEvents = () => {
                                 }}
                                 className="space-y-4"
                             >
+                                <div className="flex justify-between items-center">
+                                    <label className="block text-xs font-bold text-slate-700">Ticket QR Code</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCameraScanner(true)}
+                                        className="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 px-3 py-1 rounded-lg font-bold flex items-center gap-1.5 transition-all shadow-xs"
+                                    >
+                                        <Camera size={14} />
+                                        <span>Open Camera Scanner</span>
+                                    </button>
+                                </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-700 mb-1">Scan or Enter Ticket QR Code</label>
                                     <input
                                         type="text" required
                                         placeholder="e.g. EVT-TICKET-..."
@@ -326,6 +338,18 @@ const AdminEvents = () => {
                         </div>
                     </div>
                 )}
+
+                {/* Camera QR Scanner Modal */}
+                <CameraQrScannerModal
+                    isOpen={showCameraScanner}
+                    onClose={() => setShowCameraScanner(false)}
+                    onScanSuccess={(code) => {
+                        setQrCodeInput(code);
+                        handleVerifyEntry(code);
+                    }}
+                    title="Scan Event Pass QR"
+                    description="Point camera at visitor/student ticket QR code"
+                />
 
                 {/* Attendance Report Modal */}
                 {showReportModal && (

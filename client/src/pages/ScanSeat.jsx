@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import API from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import confetti from 'canvas-confetti';
 import { 
     BookOpen, CheckCircle, XCircle, QrCode, Scan, Clock, 
-    Sparkles, ArrowRight, UserCheck, ShieldAlert, LogIn, 
+    Sparkles, ArrowRight, UserCheck, ShieldAlert, ShieldCheck, LogIn, 
     Layers, RefreshCw, Smartphone, Camera, ChevronRight
 } from 'lucide-react';
+import CameraQrScannerModal from '../components/CameraQrScannerModal';
 
 const ScanSeat = () => {
     const [searchParams] = useSearchParams();
@@ -26,9 +27,8 @@ const ScanSeat = () => {
     const [actionLoading, setActionLoading] = useState(false);
     const [actionResult, setActionResult] = useState(null);
 
-    // Camera Scanner Sim/Stream State
-    const [isScanningCamera, setIsScanningCamera] = useState(false);
-    const videoRef = useRef(null);
+    // Live Camera Scanner State
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
 
     useEffect(() => {
         if (initialCode) {
@@ -57,6 +57,11 @@ const ScanSeat = () => {
         } finally {
             setLoadingSeat(false);
         }
+    };
+
+    const handleCameraScanSuccess = (decodedCode) => {
+        setSeatCode(decodedCode);
+        fetchSeatInfo(decodedCode);
     };
 
     const handleAction = async (actionType = 'TOGGLE') => {
@@ -177,23 +182,13 @@ const ScanSeat = () => {
                             <span>Seat QR Code</span>
                             <button 
                                 type="button" 
-                                onClick={toggleCamera}
-                                className="text-[11px] text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1"
+                                onClick={() => setIsScannerOpen(true)}
+                                className="text-xs bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 px-3 py-1 rounded-lg font-bold flex items-center gap-1.5 transition-all shadow-sm"
                             >
-                                <Camera size={13} />
-                                {isScanningCamera ? 'Close Camera' : 'Scan with Camera'}
+                                <Camera size={14} />
+                                <span>Live Camera Scanner</span>
                             </button>
                         </label>
-
-                        {isScanningCamera && (
-                            <div className="rounded-2xl overflow-hidden border border-emerald-500/40 relative bg-black aspect-video flex items-center justify-center">
-                                <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 border-2 border-emerald-400/60 rounded-2xl pointer-events-none animate-pulse"></div>
-                                <div className="absolute bottom-2 bg-black/70 px-3 py-1 rounded-full text-[11px] text-slate-200">
-                                    Point camera at desk QR sticker
-                                </div>
-                            </div>
-                        )}
 
                         <div className="flex gap-2">
                             <div className="relative flex-1">
@@ -403,6 +398,15 @@ const ScanSeat = () => {
 
                 </div>
             </main>
+
+            {/* Live Camera Scanner Modal */}
+            <CameraQrScannerModal
+                isOpen={isScannerOpen}
+                onClose={() => setIsScannerOpen(false)}
+                onScanSuccess={handleCameraScanSuccess}
+                title="Scan Library Desk QR"
+                description="Point your camera at any desk QR code sticker on campus"
+            />
 
             {/* Footer */}
             <footer className="text-center text-slate-600 text-xs py-4">

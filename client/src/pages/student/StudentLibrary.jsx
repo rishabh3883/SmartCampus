@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import API from '../../services/api';
 import { QRCodeSVG } from 'qrcode.react';
-import { BookOpen, Clock, CheckCircle, XCircle, QrCode, Scan, AlertCircle, RefreshCw, UserCheck, ShieldCheck, Sparkles } from 'lucide-react';
+import { BookOpen, Clock, CheckCircle, XCircle, QrCode, Scan, AlertCircle, RefreshCw, UserCheck, ShieldCheck, Sparkles, Camera } from 'lucide-react';
+import CameraQrScannerModal from '../../components/CameraQrScannerModal';
 
 const StudentLibrary = ({ isEmbedded = false }) => {
     const [libraries, setLibraries] = useState([]);
@@ -16,6 +17,7 @@ const StudentLibrary = ({ isEmbedded = false }) => {
     const [seats, setSeats] = useState([]);
     const [activeQrModal, setActiveQrModal] = useState(null); // Seat object for showing QR modal
     const [showScannerModal, setShowScannerModal] = useState(false);
+    const [showCameraScanner, setShowCameraScanner] = useState(false);
     const [manualQrInput, setManualQrInput] = useState('');
     const [scanMessage, setScanMessage] = useState(null);
     const [scanLoading, setScanLoading] = useState(false);
@@ -426,8 +428,18 @@ const StudentLibrary = ({ isEmbedded = false }) => {
                                 }}
                                 className="space-y-4"
                             >
+                                <div className="flex justify-between items-center">
+                                    <label className="block text-xs font-bold text-slate-700">Seat QR Code</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCameraScanner(true)}
+                                        className="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 px-3 py-1 rounded-lg font-bold flex items-center gap-1.5 transition-all shadow-xs"
+                                    >
+                                        <Camera size={14} />
+                                        <span>Open Camera Scanner</span>
+                                    </button>
+                                </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-700 mb-1">Scan or Type Seat QR Code</label>
                                     <input
                                         type="text"
                                         required
@@ -450,6 +462,18 @@ const StudentLibrary = ({ isEmbedded = false }) => {
                         </div>
                     </div>
                 )}
+
+                {/* Camera QR Scanner Modal */}
+                <CameraQrScannerModal
+                    isOpen={showCameraScanner}
+                    onClose={() => setShowCameraScanner(false)}
+                    onScanSuccess={(code) => {
+                        setManualQrInput(code);
+                        handleScanQr(code);
+                    }}
+                    title="Scan Library Desk QR"
+                    description="Point camera at desk QR code to book or vacate seat"
+                />
 
             </main>
         </div>
