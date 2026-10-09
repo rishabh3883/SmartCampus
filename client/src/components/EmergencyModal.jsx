@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
+import socket from '../services/socket';
 import { AlertTriangle, X } from 'lucide-react';
-
-const socket = io('http://localhost:5000'); // Ensure this matches your backend URL
 
 const EmergencyModal = () => {
     const [alertData, setAlertData] = useState(null);

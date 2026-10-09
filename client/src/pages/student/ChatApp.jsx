@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import API from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { io } from 'socket.io-client';
+import { SERVER_URL } from '../../config';
 import { Search, Send, Users, MessageSquare, Phone, Video, MoreVertical, Plus, X } from 'lucide-react';
 import moment from 'moment';
 
@@ -23,7 +24,7 @@ const ChatApp = ({ isEmbedded }) => {
 
     // Initial Fetch & Socket Setup
     useEffect(() => {
-        const newSocket = io('http://localhost:5000');
+        const newSocket = io(SERVER_URL);
         setSocket(newSocket);
 
         fetchConversations();

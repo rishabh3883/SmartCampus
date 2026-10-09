@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/Navbar';
 import API from '../../services/api';
+import { SERVER_URL } from '../../config';
 import { AlertTriangle, Droplets, Zap, PieChart as PieIcon, CheckCircle, XCircle, Clock, FileText, Send, BookOpen, Calendar, Activity, Shield, Users, UserMinus, UserCheck, Cpu, TrendingUp, LayoutDashboard, Radio, LogOut, FileSpreadsheet } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import InsightsWidget from '../../components/InsightsWidget';
@@ -353,7 +354,7 @@ const AdminDashboard = () => {
                     {viewImage && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={() => setViewImage(null)}>
                             <button className="absolute top-4 right-4 text-white hover:text-rose-400 transition-colors"><XCircle size={32} /></button>
-                            <img src={`http://localhost:5000/${viewImage}`} alt="Evidence" className="max-w-full max-h-[90vh] rounded-lg shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()} />
+                            <img src={`${SERVER_URL}/${viewImage}`} alt="Evidence" className="max-w-full max-h-[90vh] rounded-lg shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()} />
                         </div>
                     )}
 
@@ -741,7 +742,7 @@ const AdminDashboard = () => {
                                                 {c.imageUrl && (
                                                     <div className="mb-3">
                                                         <img
-                                                            src={`http://localhost:5000/${c.imageUrl}`}
+                                                            src={`${SERVER_URL}/${c.imageUrl}`}
                                                             alt="Evidence"
                                                             className="h-16 w-16 object-cover rounded-lg border border-slate-200 cursor-pointer hover:scale-105 transition-transform"
                                                             onClick={() => setViewImage(c.imageUrl)}

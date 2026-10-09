@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { SERVER_URL } from '../../config';
 import { MessageSquare, Heart, Share2, Upload, MoreHorizontal, Send, Bell, Image as ImageIcon, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 import moment from 'moment';
 
@@ -286,7 +287,7 @@ const SocialFeed = ({ isEmbedded }) => {
                                     {post.images && post.images.length > 0 && (
                                         <div className="mb-4 rounded-xl overflow-hidden border border-slate-100">
                                             {post.images.map((img, i) => (
-                                                <img key={i} src={`http://localhost:5000${img}`} alt="Post content" className="w-full h-auto max-h-96 object-cover" />
+                                                <img key={i} src={`${SERVER_URL}${img}`} alt="Post content" className="w-full h-auto max-h-96 object-cover" />
                                             ))}
                                         </div>
                                     )}
