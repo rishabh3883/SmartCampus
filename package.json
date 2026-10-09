@@ -4,7 +4,8 @@
   "description": "> A MERN-stack based solution for monitoring and managing campus resources, energy usage, and sustainability metrics.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "cd client && npm install && npm run build",
+    "start": "cd server && npm start"
   },
   "keywords": [],
   "author": "",
