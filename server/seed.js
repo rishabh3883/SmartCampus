@@ -6,11 +6,12 @@ const Hostel = require('./models/Hostel');
 const LibraryStatus = require('./models/LibraryStatus');
 const connectDB = require('./config/db');
 
-dotenv.config();
-connectDB();
+const path = require('path');
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const seedData = async () => {
     try {
+        await connectDB();
         // Clear old data
         await User.deleteMany();
         await Hostel.deleteMany();
