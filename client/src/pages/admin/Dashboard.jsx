@@ -23,12 +23,14 @@ const Sidebar = ({ activeTab, setActiveTab, complaintsCount, usersCount }) => {
         <div className="w-64 bg-white h-screen border-r border-slate-200 flex flex-col fixed left-0 top-0 z-50 shadow-sm font-sans">
             {/* Logo */}
             <div className="p-6 border-b border-slate-100 flex items-center gap-3">
-                <div className="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-200">
-                    <LayoutDashboard className="text-white" size={20} />
+                <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-500/20 shrink-0">
+                    <LayoutDashboard size={20} />
                 </div>
-                <div>
-                    <h1 className="text-lg font-bold text-slate-900 tracking-tight leading-tight">SmartCampusManagement</h1>
-                    <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Admin Console</p>
+                <div className="flex flex-col min-w-0">
+                    <h1 className="text-base font-black text-slate-900 tracking-tight leading-tight truncate">
+                        Smart<span className="text-indigo-600">Campus</span>
+                    </h1>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Admin Console</p>
                 </div>
             </div>
 

@@ -18,7 +18,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/smart_campu
         name: 'Chief Security Officer',
         email: email,
         password: hashedPassword,
-        role: 'Employee', // Using Employee role for Staff/Security
+        role: 'Security',
         badges: ['Security']
     });
     await user.save();

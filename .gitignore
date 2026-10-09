@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Environment Variables
+.env
+.env.*
+server/.env
+server/.env.*
+
+# Build Output
+client/dist/
+dist/
+
+# Uploads and temporary files
+server/uploads/*
+!server/uploads/.gitkeep
+*.log
+npm-debug.log*
+
+# OS & Editor
+.DS_Store
+.vscode/
+.idea/

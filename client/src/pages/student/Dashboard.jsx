@@ -119,12 +119,29 @@ const StudentDashboard = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex font-sans">
+        <div className="min-h-screen bg-slate-50 flex font-sans relative overflow-x-hidden">
+            {/* Mobile Backdrop */}
+            {isSidebarOpen && (
+                <div 
+                    onClick={() => setIsSidebarOpen(false)} 
+                    className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-30 lg:hidden"
+                />
+            )}
+
             {/* Sidebar */}
-            <aside className={`bg-white border-r border-slate-200 fixed lg:static inset-y-0 left-0 z-40 w-64 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} transition-transform duration-300 flex flex-col`}>
-                <div className="h-20 flex items-center px-6 border-b border-slate-100">
-                    <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold mr-3 shadow-indigo-200 shadow-lg">S</div>
-                    <span className="text-xl font-bold text-slate-800">SmartCampusManagement</span>
+            <aside className={`bg-white border-r border-slate-200 fixed lg:static inset-y-0 left-0 z-40 w-64 shrink-0 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} transition-transform duration-300 flex flex-col shadow-xl lg:shadow-none`}>
+                <div className="h-20 flex items-center px-6 border-b border-slate-100 gap-3">
+                    <div className="w-9 h-9 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-indigo-500/20 shrink-0">
+                        S
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                        <span className="text-base font-black text-slate-900 leading-tight truncate">
+                            Campus<span className="text-indigo-600">Hub</span>
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                            Student Portal
+                        </span>
+                    </div>
                 </div>
 
                 <div className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
@@ -152,10 +169,14 @@ const StudentDashboard = () => {
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
                 {/* Topbar */}
-                <header className="h-20 bg-white border-b border-slate-200 sticky top-0 z-30 px-4 md:px-8 flex items-center justify-between">
+                <header className="h-20 bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-20 px-4 md:px-8 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-lg">
-                            <Menu size={24} />
+                        <button 
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+                            className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl border border-slate-200"
+                            title="Toggle Menu"
+                        >
+                            <Menu size={20} />
                         </button>
                         <h1 className="text-xl font-bold text-slate-800 capitalize">{activeTab.replace('-', ' ')}</h1>
                     </div>

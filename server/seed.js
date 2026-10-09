@@ -28,9 +28,14 @@ const seedData = async () => {
         const commonPassword = await bcrypt.hash('password123', 10);
         const securityPassword = await bcrypt.hash('security123', 10);
 
+        // Delete any existing demo users first
+        await User.deleteMany({
+            email: { $in: ['admin@college.edu', 'rishabh@student.edu', 'staff@college.edu', 'security@campus.com', 'reserved@college.edu'] }
+        });
+
         await User.create([
             {
-                name: 'Admin User',
+                name: 'Admin Officer',
                 email: 'admin@college.edu',
                 password: commonPassword,
                 role: 'Admin'
@@ -40,11 +45,11 @@ const seedData = async () => {
                 email: 'rishabh@student.edu',
                 password: commonPassword,
                 role: 'Student',
-                enrollmentNumber: 'STUDENT123',
+                enrollmentNumber: 'PU2024CS001',
                 hostelId: hostels[0]._id
             },
             {
-                name: 'Maintenance Staff',
+                name: 'Campus Staff / Employee',
                 email: 'staff@college.edu',
                 password: commonPassword,
                 role: 'Employee'
@@ -53,18 +58,11 @@ const seedData = async () => {
                 name: 'Chief Security Officer',
                 email: 'security@campus.com',
                 password: securityPassword,
-                role: 'Employee',
+                role: 'Security',
                 badges: ['Security']
-            },
-            {
-                name: 'Reserved Security AI',
-                email: 'reserved@college.edu',
-                password: commonPassword,
-                role: 'Employee',
-                badges: ['System']
             }
         ]);
-        console.log('Users Seeded');
+        console.log('Demo Users Seeded Successfully');
 
         // Init Library
         await LibraryStatus.create({ totalSeats: 50, occupiedSeats: 12 });

@@ -37,7 +37,7 @@ exports.register = async (req, res) => {
             email,
             enrollmentNumber,
             password: hashedPassword,
-            role: role === 'Employee' ? 'Employee' : 'Pending', // Auto-approve Staff for hackathon ease
+            role: 'Pending',
             hostelId
         });
 

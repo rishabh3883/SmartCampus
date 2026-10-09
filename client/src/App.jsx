@@ -4,8 +4,6 @@ import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Landing from './pages/Landing';
-import ResumeAnalyzer from './pages/ResumeAnalyzer';
-import CoPay from './pages/CoPay';
 import StudentDashboard from './pages/student/Dashboard';
 import AdminDashboard from './pages/admin/Dashboard';
 import EmployeeDashboard from './pages/employee/Dashboard';
@@ -34,11 +32,10 @@ function App() {
       <EmergencyModal />
       <Router>
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/resume-analyzer" element={<ResumeAnalyzer />} />
-          <Route path="/copay" element={<CoPay />} />
 
 
 

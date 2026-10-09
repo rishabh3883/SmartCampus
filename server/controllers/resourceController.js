@@ -109,17 +109,25 @@ exports.uploadExcel = async (req, res) => {
             const hostel = await Hostel.findOne({ name: row.HostelName });
             if (!hostel) continue; // Skip if hostel not found
 
+            const water = Number(row.Water);
+            const electricity = Number(row.Electricity);
+            const foodWaste = Number(row.FoodWaste);
+
+            if (isNaN(water) || isNaN(electricity) || isNaN(foodWaste) || water < 0 || electricity < 0 || foodWaste < 0) {
+                continue; // Skip invalid or negative records
+            }
+
             const usage = new ResourceUsage({
                 hostelId: hostel._id,
                 date: new Date(row.Date), // Ensure Excel date format is compatible
-                water: row.Water,
-                electricity: row.Electricity,
-                foodWaste: row.FoodWaste,
+                water,
+                electricity,
+                foodWaste,
                 sourceFile: req.file.filename
             });
 
             await usage.save();
-            await checkAndCreateAlerts(hostel._id, { water: row.Water, electricity: row.Electricity, foodWaste: row.FoodWaste });
+            await checkAndCreateAlerts(hostel._id, { water, electricity, foodWaste });
             count++;
         }
 
@@ -128,6 +136,9 @@ exports.uploadExcel = async (req, res) => {
 
         res.json({ message: `Successfully processed ${count} records` });
     } catch (error) {
+        if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
         res.status(500).json({ message: error.message });
     }
 };
@@ -186,27 +197,40 @@ exports.getDashboardStats = async (req, res) => {
 exports.submitDailyLog = async (req, res) => {
     try {
         const { logs } = req.body;
+        if (!logs || !Array.isArray(logs)) {
+            return res.status(400).json({ message: 'Logs array is required' });
+        }
+
         let count = 0;
         let aiInsights = [];
 
         for (const log of logs) {
             if (!log.hostelId) continue;
+
+            const water = Number(log.water) || 0;
+            const electricity = Number(log.electricity) || 0;
+            const foodWaste = Number(log.foodWaste) || 0;
+
+            if (water < 0 || electricity < 0 || foodWaste < 0) {
+                return res.status(400).json({ message: 'Resource values cannot be negative.' });
+            }
+
             const usage = new ResourceUsage({
                 hostelId: log.hostelId,
                 date: new Date(log.date || Date.now()),
-                water: log.water,
-                electricity: log.electricity,
-                foodWaste: log.foodWaste,
+                water,
+                electricity,
+                foodWaste,
                 sourceFile: 'Manual Entry'
             });
             await usage.save();
-            await checkAndCreateAlerts(log.hostelId, log); // Existing Alert logic
+            await checkAndCreateAlerts(log.hostelId, { water, electricity, foodWaste }); // Existing Alert logic
 
             // Immediate Feedback Analysis
-            const insight = await generateInsight(log.hostelId, { water: log.water, elec: log.electricity });
+            const insight = await generateInsight(log.hostelId, { water, elec: electricity });
             if (insight) {
                 const hostel = await Hostel.findById(log.hostelId);
-                aiInsights.push(`${hostel.name}: ${insight}`);
+                if (hostel) aiInsights.push(`${hostel.name}: ${insight}`);
             }
             count++;
         }

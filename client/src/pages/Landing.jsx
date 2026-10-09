@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { ArrowRight, Globe, Zap, Shield, ChevronRight, BarChart3, Users, FileText, CreditCard } from 'lucide-react';
+import { ArrowRight, Globe, Zap, Shield, ChevronRight, BarChart3, Users } from 'lucide-react';
 
 const Landing = () => {
     const navigate = useNavigate();
@@ -15,7 +15,7 @@ const Landing = () => {
                 <div className="page-container relative z-10 text-center">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm mb-8 animate-enter">
                         <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span className="text-sm font-medium text-slate-600">Smart Campus v2.0 is Live</span>
+                        <span className="text-sm font-medium text-slate-600">Smart Campus Management System</span>
                     </div>
 
                     <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tight mb-8 animate-enter" style={{ animationDelay: '0.1s' }}>
@@ -24,44 +24,26 @@ const Landing = () => {
                     </h1>
 
                     <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed animate-enter" style={{ animationDelay: '0.2s' }}>
-                        Streamline operations, enhance sustainability, and empower your university community with an AI-driven, unified dashboard experience.
+                        Streamline operations, enhance sustainability, and empower your university community with a role-based, unified campus dashboard experience.
                     </p>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto animate-enter" style={{ animationDelay: '0.3s' }}>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto animate-enter" style={{ animationDelay: '0.3s' }}>
                         {/* Button 1: Smart Campus Main */}
                         <button
                             onClick={() => navigate('/signup')}
-                            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold shadow-lg shadow-emerald-500/25 hover:from-emerald-400 hover:to-teal-500 active:scale-95 transition-all flex items-center justify-center gap-2 border border-emerald-400/30 group"
+                            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold shadow-lg shadow-emerald-500/25 hover:from-emerald-400 hover:to-teal-500 active:scale-95 transition-all flex items-center justify-center gap-2 border border-emerald-400/30 group"
                         >
                             <span>Get Started</span>
                             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                         </button>
 
-                        {/* Button 2: Live Demo */}
+                        {/* Button 2: Live Demo / Login */}
                         <button
                             onClick={() => navigate('/login')}
-                            className="px-6 py-3.5 rounded-2xl bg-slate-800/90 text-slate-100 font-bold hover:bg-slate-700 active:scale-95 transition-all flex items-center justify-center gap-2 border border-slate-700/80 shadow-md group"
+                            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-slate-800/90 text-slate-100 font-bold hover:bg-slate-700 active:scale-95 transition-all flex items-center justify-center gap-2 border border-slate-700/80 shadow-md group"
                         >
                             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-                            <span>Live Demo</span>
-                        </button>
-
-                        {/* Button 3: Resume Analyzer */}
-                        <button
-                            onClick={() => navigate('/resume-analyzer')}
-                            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold shadow-lg shadow-purple-500/25 hover:from-purple-500 hover:to-indigo-500 active:scale-95 transition-all flex items-center justify-center gap-2 border border-purple-400/30 group"
-                        >
-                            <FileText size={18} className="text-purple-200 group-hover:scale-110 transition-transform" />
-                            <span>Resume Analyzer</span>
-                        </button>
-
-                        {/* Button 4: Co-Pay */}
-                        <button
-                            onClick={() => navigate('/copay')}
-                            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold shadow-lg shadow-blue-500/25 hover:from-blue-500 hover:to-cyan-500 active:scale-95 transition-all flex items-center justify-center gap-2 border border-blue-400/30 group"
-                        >
-                            <CreditCard size={18} className="text-blue-200 group-hover:scale-110 transition-transform" />
-                            <span>Co-Pay</span>
+                            <span>Sign In / Portal</span>
                         </button>
                     </div>
                 </div>

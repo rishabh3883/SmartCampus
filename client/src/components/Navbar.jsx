@@ -27,10 +27,10 @@ const Navbar = () => {
                 {!isDashboardRoot && (
                     <button
                         onClick={() => navigate(getHomePath())}
-                        className="mr-1 p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-all flex items-center gap-1 text-xs font-bold border border-slate-200 active:scale-95"
+                        className="p-2 sm:px-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold border border-slate-200 active:scale-95 shadow-xs"
                         title="Back to Dashboard"
                     >
-                        <ArrowLeft size={16} />
+                        <ArrowLeft size={15} />
                         <span className="hidden sm:inline">Back to Dashboard</span>
                     </button>
                 )}
@@ -40,16 +40,20 @@ const Navbar = () => {
                     className="flex items-center gap-3 cursor-pointer group"
                     onClick={() => navigate(getHomePath())}
                 >
-                    <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-emerald-500/20 transform group-hover:scale-105 transition-transform">
+                    <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-emerald-500/20 transform group-hover:scale-105 transition-transform shrink-0">
                         S
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col min-w-0">
                         <span className="text-lg font-black text-slate-900 leading-tight">
-                            Campus<span className="text-emerald-600">Management</span>
+                            Smart<span className="text-emerald-600">Campus</span>
                         </span>
-                        {user && (
+                        {user ? (
                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none">
                                 {user.role} Portal
+                            </span>
+                        ) : (
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">
+                                Management System
                             </span>
                         )}
                     </div>
