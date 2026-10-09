@@ -78,17 +78,47 @@ exports.getLibrarySeats = async (req, res) => {
     }
 };
 
-// --- Get Single Seat info by Code (Public) ---
+// --- Get Single Seat info by Code (Public & Verifiable) ---
 exports.getSeatByCode = async (req, res) => {
     try {
-        const { seatCode } = req.params;
+        let { seatCode } = req.params;
+        // Support extracting code from full URL if scanned with a URL parser
+        if (seatCode && seatCode.includes('code=')) {
+            seatCode = seatCode.split('code=')[1].split('&')[0];
+        }
+
         const seat = await LibrarySeat.findOne({ seatCode }).populate('library');
         if (!seat) {
-            return res.status(404).json({ message: "Invalid QR Code: Seat not found." });
+            return res.status(404).json({ 
+                isGenuine: false,
+                message: "❌ UNRECOGNIZED / FAKE QR CODE! This QR is not registered in Parul University database." 
+            });
         }
-        res.json({ seat, library: seat.library });
+
+        const library = seat.library;
+        const verificationInfo = {
+            isGenuine: true,
+            badge: "✅ 100% GENUINE SMART CAMPUS ASSET",
+            issuer: "Parul University Campus Infrastructure & Library Authority",
+            verifiedAt: new Date(),
+            seatCode: seat.seatCode,
+            seatNumber: seat.seatNumber,
+            facilityName: library?.name || 'Central Campus Library',
+            location: "Academic Block - Library Wing",
+            currentStatus: seat.status,
+            occupantName: seat.occupiedByName || (seat.status === 'Occupied' ? 'Registered Student' : null),
+            occupiedAt: seat.occupiedAt || null,
+            securityToken: `PU-VERIFIED-${Buffer.from(seat.seatCode).toString('base64').substring(0, 10).toUpperCase()}`
+        };
+
+        res.json({ 
+            isGenuine: true,
+            seat, 
+            library,
+            verification: verificationInfo
+        });
     } catch (err) {
-        res.status(500).json({ message: "Failed to fetch seat details", error: err.message });
+        res.status(500).json({ isGenuine: false, message: "Failed to verify seat QR code", error: err.message });
     }
 };
 

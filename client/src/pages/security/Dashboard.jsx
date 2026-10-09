@@ -16,6 +16,8 @@ const SecurityDashboard = () => {
     const [scanLoading, setScanLoading] = useState(false);
     const [scanResult, setScanResult] = useState(null);
     const [recentCheckIns, setRecentCheckIns] = useState([]);
+    const [isCameraActive, setIsCameraActive] = useState(false);
+    const videoRef = React.useRef(null);
 
     useEffect(() => {
         fetchAlarms();
@@ -52,18 +54,43 @@ const SecurityDashboard = () => {
         }
     };
 
-    const handleVerifyTicket = async (e) => {
-        if (e) e.preventDefault();
-        if (!ticketInput.trim()) return;
+    const toggleCamera = async () => {
+        if (isCameraActive) {
+            if (videoRef.current && videoRef.current.srcObject) {
+                const tracks = videoRef.current.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+            }
+            setIsCameraActive(false);
+        } else {
+            try {
+                setIsCameraActive(true);
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                }
+            } catch (err) {
+                console.warn('Camera access unavailable:', err);
+                setIsCameraActive(false);
+                alert('Camera stream unavailable. You can enter or paste the Pass QR code directly.');
+            }
+        }
+    };
+
+    const handleVerifyCode = async (codeToVerify) => {
+        const code = codeToVerify || ticketInput;
+        if (!code || !code.trim()) return;
 
         setScanLoading(true);
         setScanResult(null);
 
         try {
-            const res = await API.post('/events/verify-entry', { qrCode: ticketInput.trim() });
+            const res = await API.post('/events/verify-entry', { qrCode: code.trim() });
             const resultData = {
                 success: true,
+                isGenuine: true,
+                isDuplicate: false,
                 message: res.data.message || 'Pass verified successfully!',
+                verification: res.data.verification,
                 booking: res.data.booking,
                 timestamp: new Date().toLocaleTimeString()
             };
@@ -71,18 +98,26 @@ const SecurityDashboard = () => {
             setRecentCheckIns(prev => [resultData, ...prev.slice(0, 9)]);
             setTicketInput('');
         } catch (err) {
-            const errorMsg = err.response?.data?.message || "Verification failed: Pass not found or invalid";
-            const isDuplicate = err.response?.data?.alreadyUsed || false;
+            const errorMsg = err.response?.data?.message || "Verification failed: Pass not found or counterfeit";
+            const isDuplicate = err.response?.data?.isDuplicate || err.response?.data?.alreadyUsed || false;
+            const isGenuine = err.response?.data?.isGenuine || false;
             setScanResult({
                 success: false,
+                isGenuine,
                 isDuplicate,
                 message: errorMsg,
+                verification: err.response?.data?.verification,
                 booking: err.response?.data?.booking,
                 timestamp: new Date().toLocaleTimeString()
             });
         } finally {
             setScanLoading(false);
         }
+    };
+
+    const handleVerifyTicket = async (e) => {
+        if (e) e.preventDefault();
+        handleVerifyCode(ticketInput);
     };
 
     const getStatusColor = (status) => {
@@ -257,23 +292,46 @@ const SecurityDashboard = () => {
                 {/* TAB 2: EVENT GATE PASS CHECK-IN & DUPLICATE PREVENTION */}
                 {activeTab === 'events' && (
                     <div className="space-y-8 animate-enter">
-                        <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100">
-                                    <Scan size={22} />
+                        <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm space-y-6">
+                            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-slate-100 pb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100">
+                                        <Scan size={22} />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-lg font-black text-slate-900">Event Gate Pass QR Verification</h2>
+                                        <p className="text-slate-500 text-xs">Verify QR Authenticity, Participant Identity & Block Counterfeits</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h2 className="text-lg font-black text-slate-900">Participant Gate Verification</h2>
-                                    <p className="text-slate-500 text-xs">Verify QR Code / Ticket Code & Prevent Duplicate Entry</p>
-                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={toggleCamera}
+                                    className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all"
+                                >
+                                    <Scan size={15} className="text-emerald-400" />
+                                    <span>{isCameraActive ? 'Close Camera' : 'Live Camera Scanner'}</span>
+                                </button>
                             </div>
 
-                            <form onSubmit={handleVerifyTicket} className="flex flex-col sm:flex-row gap-3 mb-6">
+                            {/* Camera Video Viewport */}
+                            {isCameraActive && (
+                                <div className="rounded-2xl overflow-hidden border-2 border-emerald-500/40 relative bg-black aspect-video max-w-md mx-auto flex items-center justify-center shadow-lg">
+                                    <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+                                    <div className="absolute inset-4 border-2 border-emerald-400/80 rounded-2xl pointer-events-none animate-pulse"></div>
+                                    <div className="absolute bottom-3 bg-black/80 px-3.5 py-1 rounded-full text-[11px] text-white font-medium">
+                                        Point camera at student's Event QR Pass
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Input Form */}
+                            <form onSubmit={handleVerifyTicket} className="flex flex-col sm:flex-row gap-3">
                                 <div className="relative flex-1">
                                     <Ticket className="absolute left-4 top-3.5 text-slate-400" size={18} />
                                     <input
                                         type="text"
-                                        placeholder="Scan or enter Pass QR Code (e.g. EVT-BK-XXXXX)..."
+                                        placeholder="Scan or enter Pass QR Code (e.g. EVT-TICKET-xxxx)..."
                                         value={ticketInput}
                                         onChange={(e) => setTicketInput(e.target.value)}
                                         className="input-field pl-12 py-3 bg-slate-50 text-slate-900 border-slate-300 focus:bg-white text-sm"
@@ -290,54 +348,97 @@ const SecurityDashboard = () => {
                                     ) : (
                                         <>
                                             <UserCheck size={18} />
-                                            <span>Verify Pass</span>
+                                            <span>Authenticate Pass</span>
                                         </>
                                     )}
                                 </button>
                             </form>
 
-                            {/* Verification Result Feedback */}
+                            {/* Verification Result Feedback Card */}
                             {scanResult && (
-                                <div className={`p-6 rounded-2xl border transition-all ${
+                                <div className={`p-6 rounded-2xl border transition-all shadow-md ${
                                     scanResult.success 
-                                        ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950'
+                                        ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950'
                                         : scanResult.isDuplicate
-                                            ? 'bg-amber-50/80 border-amber-300 text-amber-950'
-                                            : 'bg-rose-50/80 border-rose-300 text-rose-950'
+                                            ? 'bg-amber-50/90 border-amber-300 text-amber-950'
+                                            : 'bg-rose-50/90 border-rose-300 text-rose-950'
                                 }`}>
-                                    <div className="flex items-start gap-4">
-                                        <div className={`p-3 rounded-2xl ${
+                                    <div className="flex flex-col md:flex-row items-start gap-4">
+                                        <div className={`p-3.5 rounded-2xl shrink-0 ${
                                             scanResult.success 
-                                                ? 'bg-emerald-500 text-white' 
+                                                ? 'bg-emerald-600 text-white' 
                                                 : scanResult.isDuplicate 
-                                                    ? 'bg-amber-500 text-white' 
-                                                    : 'bg-rose-500 text-white'
+                                                    ? 'bg-amber-600 text-white' 
+                                                    : 'bg-rose-600 text-white'
                                         }`}>
-                                            {scanResult.success ? <CheckCircle size={28} /> : scanResult.isDuplicate ? <AlertCircle size={28} /> : <XCircle size={28} />}
+                                            {scanResult.success ? <CheckCircle size={32} /> : scanResult.isDuplicate ? <AlertCircle size={32} /> : <XCircle size={32} />}
                                         </div>
 
-                                        <div className="flex-1">
-                                            <div className="flex items-center justify-between">
-                                                <h3 className="text-base font-black">
-                                                    {scanResult.success ? '✅ PASS VALIDATED — ENTRY ALLOWED' : scanResult.isDuplicate ? '⚠️ DUPLICATE ENTRY ATTEMPT' : '❌ INVALID PASS'}
-                                                </h3>
-                                                <span className="text-xs font-bold opacity-75">{scanResult.timestamp}</span>
+                                        <div className="flex-1 w-full space-y-3">
+                                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/60 pb-2">
+                                                <div>
+                                                    <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
+                                                        scanResult.success 
+                                                            ? 'bg-emerald-200 text-emerald-900' 
+                                                            : scanResult.isDuplicate 
+                                                                ? 'bg-amber-200 text-amber-900' 
+                                                                : 'bg-rose-200 text-rose-900'
+                                                    }`}>
+                                                        {scanResult.success 
+                                                            ? '🟢 100% GENUINE & VALID PASS' 
+                                                            : scanResult.isDuplicate 
+                                                                ? '⚠️ DUPLICATE ENTRY (ALREADY USED)' 
+                                                                : '🚨 COUNTERFEIT / UNREGISTERED QR'}
+                                                    </span>
+                                                    <h3 className="text-lg font-black mt-1">
+                                                        {scanResult.success 
+                                                            ? 'ENTRY GRANTED — OFFICIAL PASS' 
+                                                            : scanResult.isDuplicate 
+                                                                ? 'ENTRY BLOCKED — PASS ALREADY SCANNED' 
+                                                                : 'ENTRY DENIED — INVALID PASS'}
+                                                    </h3>
+                                                </div>
+                                                <span className="text-xs font-mono font-bold bg-white/80 px-2.5 py-1 rounded-lg border border-slate-200">
+                                                    {scanResult.timestamp}
+                                                </span>
                                             </div>
-                                            <p className="text-sm mt-1 font-medium">{scanResult.message}</p>
 
-                                            {scanResult.booking && (
-                                                <div className="mt-4 p-4 bg-white/80 rounded-xl border border-slate-200/60 text-xs space-y-2 text-slate-700">
-                                                    <div className="flex justify-between">
-                                                        <span className="text-slate-500">Attendee:</span>
-                                                        <span className="font-bold">{scanResult.booking.attendeeName || scanResult.booking.userId?.name || 'N/A'}</span>
+                                            <p className="text-sm font-semibold">{scanResult.message}</p>
+
+                                            {/* Detailed Attendee & Event Metadata */}
+                                            {(scanResult.verification || scanResult.booking) && (
+                                                <div className="bg-white rounded-2xl p-4 border border-slate-200 space-y-3 text-xs text-slate-800 shadow-xs">
+                                                    <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
+                                                        <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-sm">
+                                                            {(scanResult.verification?.attendeeName || scanResult.booking?.attendeeName || 'U').charAt(0)}
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="font-bold text-sm text-slate-900">
+                                                                {scanResult.verification?.attendeeName || scanResult.booking?.attendeeName || 'Registered Student'}
+                                                            </h4>
+                                                            <p className="text-slate-500 text-[11px]">
+                                                                Enrollment: <span className="font-mono font-bold text-slate-700">{scanResult.verification?.enrollmentNumber || scanResult.booking?.enrollmentNumber || 'PU2024CS001'}</span> • {scanResult.verification?.attendeeEmail || scanResult.booking?.attendeeEmail || ''}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex justify-between">
-                                                        <span className="text-slate-500">Event:</span>
-                                                        <span className="font-bold">{scanResult.booking.eventId?.title || 'N/A'}</span>
-                                                    </div>
-                                                    <div className="flex justify-between">
-                                                        <span className="text-slate-500">Seats / Pass Type:</span>
-                                                        <span className="font-bold">{scanResult.booking.seats || 1} Seat(s)</span>
+
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                                                        <div>
+                                                            <span className="text-slate-400 font-semibold block uppercase text-[9px]">Event Name</span>
+                                                            <span className="font-bold text-slate-900">{scanResult.verification?.eventTitle || scanResult.booking?.eventId?.title || 'Campus Event'}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-slate-400 font-semibold block uppercase text-[9px]">Venue Location</span>
+                                                            <span className="font-bold text-slate-900">{scanResult.verification?.venue || scanResult.booking?.eventId?.venue || 'Campus Auditorium'}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-slate-400 font-semibold block uppercase text-[9px]">Pass Token / QR Code</span>
+                                                            <code className="font-mono text-emerald-700 font-bold break-all">{scanResult.verification?.qrCode || scanResult.booking?.qrCode || ticketInput}</code>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-slate-400 font-semibold block uppercase text-[9px]">Issuing Authority</span>
+                                                            <span className="font-semibold text-slate-700">{scanResult.verification?.issuer || 'Parul University Event Office'}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}

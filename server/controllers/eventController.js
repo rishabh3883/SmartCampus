@@ -112,32 +112,60 @@ exports.getMyBookings = async (req, res) => {
 // --- Venue Entry Verification via QR Code (Admin / Security / Organizer) ---
 exports.verifyEntry = async (req, res) => {
     try {
-        const { qrCode } = req.body;
-        if (!qrCode) return res.status(400).json({ message: "QR Code payload is required." });
+        let { qrCode } = req.body;
+        if (!qrCode) return res.status(400).json({ isGenuine: false, message: "QR Code payload is required." });
 
-        const booking = await Booking.findOne({ qrCode })
+        // If a full URL was scanned or pasted (e.g. https://.../scan-pass?code=EVT-TICKET-...)
+        if (qrCode.includes('code=')) {
+            qrCode = qrCode.split('code=')[1].split('&')[0];
+        }
+
+        const booking = await Booking.findOne({ qrCode: qrCode.trim() })
             .populate('eventId')
-            .populate('userId', 'name email enrollmentNumber profilePicture');
+            .populate('userId', 'name email enrollmentNumber department profilePicture');
 
         if (!booking) {
             return res.status(404).json({
                 success: false,
-                message: "❌ INVALID PASS! No booking record found for this QR code."
+                isGenuine: false,
+                message: "🚨 COUNTERFEIT / UNREGISTERED PASS! No valid booking record exists for this QR code."
             });
         }
+
+        const event = booking.eventId;
+        const verificationDetails = {
+            isGenuine: true,
+            badge: "🟢 100% OFFICIAL GENUINE GATE PASS",
+            issuer: "Parul University Event Organization Authority",
+            ticketId: booking._id,
+            qrCode: booking.qrCode,
+            attendeeName: booking.attendeeName || booking.userId?.name || 'Registered Participant',
+            attendeeEmail: booking.attendeeEmail || booking.userId?.email || 'N/A',
+            enrollmentNumber: booking.enrollmentNumber || booking.userId?.enrollmentNumber || 'PU-STUDENT',
+            eventTitle: event?.title || 'Campus Event',
+            venue: event?.venue || 'Campus Auditorium',
+            eventDate: event?.date || new Date(),
+            seats: booking.seats || 1,
+            paymentStatus: booking.paymentStatus || 'Verified Pass',
+            verifiedAt: new Date()
+        };
 
         if (booking.status !== 'Confirmed') {
             return res.status(400).json({
                 success: false,
-                message: `❌ ENTRY DENIED! Ticket status is ${booking.status}.`
+                isGenuine: true,
+                verification: verificationDetails,
+                message: `❌ ENTRY DENIED! Pass status is currently ${booking.status}.`
             });
         }
 
         if (booking.attended) {
             return res.status(400).json({
                 success: false,
-                alreadyUsed: true,
-                message: `⚠️ ALREADY CHECKED IN! ${booking.attendeeName || 'Attendee'} checked in at ${new Date(booking.attendedAt).toLocaleTimeString()}.`,
+                isGenuine: true,
+                isDuplicate: true,
+                verification: verificationDetails,
+                message: `⚠️ DUPLICATE ENTRY DETECTED! Pass was ALREADY USED at ${new Date(booking.attendedAt).toLocaleTimeString()} by ${booking.attendeeName}.`,
                 booking
             });
         }
@@ -149,11 +177,14 @@ exports.verifyEntry = async (req, res) => {
 
         res.json({
             success: true,
-            message: `🎉 ENTRY GRANTED! Welcome ${booking.attendeeName || 'Attendee'} to ${booking.eventId?.title || 'Event'}!`,
+            isGenuine: true,
+            isDuplicate: false,
+            message: `🎉 PASS VERIFIED & AUTHENTICATED! Entry granted to ${booking.attendeeName || 'Attendee'} for ${event?.title || 'Event'}.`,
+            verification: verificationDetails,
             booking
         });
     } catch (err) {
-        res.status(500).json({ message: "Failed to verify entry QR code", error: err.message });
+        res.status(500).json({ success: false, isGenuine: false, message: "Failed to verify entry QR code", error: err.message });
     }
 };
 

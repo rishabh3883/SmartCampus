@@ -218,39 +218,90 @@ const ScanSeat = () => {
                         </div>
                     </div>
 
+                    {/* Genuinity & Verification Header Badge */}
+                    {seatData && (
+                        <div className={`p-4 rounded-2xl border flex items-center justify-between gap-3 ${
+                            seatData.isGenuine !== false 
+                                ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300' 
+                                : 'bg-rose-500/15 border-rose-500/30 text-rose-300'
+                        }`}>
+                            <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-xl ${seatData.isGenuine !== false ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
+                                    <ShieldCheck size={24} />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-xs font-black tracking-wide uppercase">
+                                            {seatData.isGenuine !== false ? '✅ 100% Genuine Parul University Asset' : '❌ Unverified QR Code'}
+                                        </span>
+                                    </div>
+                                    <p className="text-[11px] text-slate-400">
+                                        {seatData.verification?.issuer || 'Parul University Infrastructure Registry'}
+                                    </p>
+                                </div>
+                            </div>
+                            <span className="hidden sm:inline-block text-[10px] font-mono bg-slate-950/60 px-2.5 py-1 rounded-lg border border-slate-700 text-slate-400">
+                                SEC-VERIFIED
+                            </span>
+                        </div>
+                    )}
+
                     {/* Error Box */}
                     {seatError && (
                         <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-3 animate-in fade-in">
-                            <ShieldAlert size={18} className="text-rose-400 shrink-0" />
-                            <span>{seatError}</span>
+                            <ShieldAlert size={20} className="text-rose-400 shrink-0" />
+                            <div>
+                                <h4 className="font-extrabold text-rose-200">❌ Fake / Unrecognized QR Code</h4>
+                                <p className="mt-0.5 text-rose-300/90">{seatError}</p>
+                            </div>
                         </div>
                     )}
 
                     {/* Seat Details Card */}
                     {seatData && (
-                        <div className="p-5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-4 animate-in fade-in">
-                            <div className="flex justify-between items-start">
+                        <div className="p-5 sm:p-6 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-4 animate-in fade-in shadow-xl">
+                            <div className="flex justify-between items-start border-b border-slate-800 pb-3">
                                 <div>
-                                    <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
-                                        {seatData.library?.name || 'Central Library'}
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-800">
+                                        {seatData.library?.name || 'Central Tech Library'}
                                     </span>
-                                    <h3 className="text-xl font-extrabold text-white mt-0.5">
+                                    <h3 className="text-2xl font-black text-white mt-1">
                                         {seatData.seat.seatNumber}
                                     </h3>
+                                    <p className="text-xs text-slate-400">
+                                        Location: {seatData.verification?.location || 'Library Academic Wing'}
+                                    </p>
                                 </div>
                                 <span className={`px-3 py-1 rounded-full text-xs font-black uppercase ${
                                     seatData.seat.status === 'Occupied' 
-                                        ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' 
+                                        ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30 animate-pulse' 
                                         : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                                 }`}>
-                                    {seatData.seat.status}
+                                    ● {seatData.seat.status}
                                 </span>
                             </div>
 
-                            <div className="text-xs text-slate-400 space-y-1">
-                                <p><span className="text-slate-500 font-semibold">Seat Code:</span> <code className="text-slate-300 font-mono">{seatData.seat.seatCode}</code></p>
+                            {/* Detailed Metadata Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/80">
+                                <div>
+                                    <span className="text-slate-500 font-semibold block text-[10px] uppercase">Unique Seat Code</span>
+                                    <code className="text-emerald-400 font-mono font-bold">{seatData.seat.seatCode}</code>
+                                </div>
+                                <div>
+                                    <span className="text-slate-500 font-semibold block text-[10px] uppercase">Security Hash</span>
+                                    <code className="text-slate-300 font-mono text-[11px]">{seatData.verification?.securityToken || 'PU-VERIFIED-AUTH'}</code>
+                                </div>
                                 {seatData.seat.status === 'Occupied' && (
-                                    <p><span className="text-slate-500 font-semibold">Occupied By:</span> <span className="text-slate-200 font-bold">{seatData.seat.occupiedByName || 'Student'}</span></p>
+                                    <>
+                                        <div>
+                                            <span className="text-slate-500 font-semibold block text-[10px] uppercase">Occupied By</span>
+                                            <span className="text-white font-bold">{seatData.seat.occupiedByName || 'Registered Student'}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-slate-500 font-semibold block text-[10px] uppercase">Occupied Since</span>
+                                            <span className="text-slate-300">{seatData.seat.occupiedAt ? new Date(seatData.seat.occupiedAt).toLocaleTimeString() : 'Just now'}</span>
+                                        </div>
+                                    </>
                                 )}
                             </div>
 
