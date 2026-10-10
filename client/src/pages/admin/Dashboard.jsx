@@ -8,7 +8,8 @@ import {
     Clock, FileText, Send, BookOpen, Calendar, Activity, Shield, Users,
     UserMinus, UserCheck, Cpu, TrendingUp, LayoutDashboard, Radio, LogOut,
     FileSpreadsheet, Scan, Edit2, Trash2, Megaphone, Search, X, ShieldCheck,
-    ChevronRight, Sparkles, SlidersHorizontal, ArrowUpRight
+    ChevronRight, Sparkles, SlidersHorizontal, ArrowUpRight, MessageSquare,
+    Heart, Image as ImageIcon, Pin, CornerDownRight, ExternalLink
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import InsightsWidget from '../../components/InsightsWidget';
@@ -17,7 +18,7 @@ import ThemeToggle from '../../components/ui/ThemeToggle';
 import { RoleBadge } from '../../components/ui/Badge';
 import { useNavigate, Link } from 'react-router-dom';
 
-const Sidebar = ({ activeTab, setActiveTab, complaintsCount, usersCount, broadcastsCount }) => {
+const Sidebar = ({ activeTab, setActiveTab, complaintsCount, usersCount, broadcastsCount, socialCount }) => {
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -47,6 +48,7 @@ const Sidebar = ({ activeTab, setActiveTab, complaintsCount, usersCount, broadca
             <div className="flex-1 overflow-y-auto py-5 px-3 space-y-1 custom-scrollbar">
                 <p className="px-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Main Menu</p>
                 <SidebarItem id="overview" label="Overview" icon={LayoutDashboard} activeTab={activeTab} setActiveTab={setActiveTab} />
+                <SidebarItem id="social" label="Campus Social" icon={MessageSquare} activeTab={activeTab} setActiveTab={setActiveTab} count={socialCount} />
                 <SidebarItem id="broadcasts" label="Broadcasts" icon={Megaphone} activeTab={activeTab} setActiveTab={setActiveTab} count={broadcastsCount} />
                 <SidebarItem id="analytics" label="Analytics" icon={Activity} activeTab={activeTab} setActiveTab={setActiveTab} />
                 <SidebarItem id="operations" label="Operations" icon={Radio} activeTab={activeTab} setActiveTab={setActiveTab} count={complaintsCount} />
@@ -62,7 +64,6 @@ const Sidebar = ({ activeTab, setActiveTab, complaintsCount, usersCount, broadca
                 <QuickLink href="/admin/attendance-reports" icon={FileSpreadsheet} label="Attendance Excel" />
                 <QuickLink href="/admin/reports" icon={FileText} label="Reports" />
                 <QuickLink href="/admin/environment" icon={Cpu} label="AI Observer" />
-                <QuickLink href="/admin/social-moderation" icon={Shield} label="Social Mod" />
             </div>
 
             {/* Logout & Profile */}
@@ -140,6 +141,19 @@ const AdminDashboard = () => {
     const [broadcastFilter, setBroadcastFilter] = useState('All');
     const [broadcastSubmitting, setBroadcastSubmitting] = useState(false);
 
+    // Campus Social Management State
+    const [socialPostsList, setSocialPostsList] = useState([]);
+    const [socialLoading, setSocialLoading] = useState(false);
+    const [socialSearch, setSocialSearch] = useState('');
+    const [socialFilter, setSocialFilter] = useState('All');
+    const [newSocialPost, setNewSocialPost] = useState({ content: '', isImportant: true, isAnonymous: false, image: null, tags: 'Official,Campus' });
+    const [socialSubmitting, setSocialSubmitting] = useState(false);
+    const [activeCommentsPost, setActiveCommentsPost] = useState(null);
+    const [commentsList, setCommentsList] = useState([]);
+    const [loadingComments, setLoadingComments] = useState(false);
+    const [newAdminComment, setNewAdminComment] = useState('');
+    const [submittingComment, setSubmittingComment] = useState(false);
+
     useEffect(() => {
         fetchInitialData();
         const interval = setInterval(() => {
@@ -176,6 +190,7 @@ const AdminDashboard = () => {
     useEffect(() => {
         if (activeTab === 'users') fetchAllUsers();
         if (activeTab === 'broadcasts') fetchBroadcasts();
+        if (activeTab === 'social') fetchSocialPosts();
     }, [activeTab, userTab]);
 
     const fetchInitialData = async () => {
@@ -195,7 +210,96 @@ const AdminDashboard = () => {
             if (hostelsRes.data?.length > 0 && !selectedHostel) setSelectedHostel(hostelsRes.data[0]._id);
             if (statsRes?.data) setImpactStats(statsRes.data);
             if (msgRes?.data) setBroadcastsList(msgRes.data);
+            fetchSocialPosts();
         } catch (err) { console.error("Dashboard Fetch Error:", err); }
+    };
+
+    const fetchSocialPosts = async () => {
+        setSocialLoading(true);
+        try {
+            const { data } = await API.get('/social/feed?limit=50&loadAuthor=true');
+            setSocialPostsList(data || []);
+        } catch (err) {
+            console.error("Error fetching social feed:", err);
+        } finally {
+            setSocialLoading(false);
+        }
+    };
+
+    const handleDeleteSocialPost = async (postId) => {
+        if (!window.confirm("⚠️ Are you sure you want to permanently delete this social post and all its comments?")) return;
+        try {
+            await API.delete(`/social/posts/${postId}`);
+            setSocialPostsList(prev => prev.filter(p => p._id !== postId));
+            if (activeCommentsPost?._id === postId) setActiveCommentsPost(null);
+            alert("Social post deleted successfully.");
+        } catch (err) {
+            alert("Failed to delete post: " + (err.response?.data?.message || err.message));
+        }
+    };
+
+    const handleCreateAdminSocialPost = async (e) => {
+        e.preventDefault();
+        if (!newSocialPost.content.trim()) return alert("Please enter post content.");
+        setSocialSubmitting(true);
+        try {
+            const formData = new FormData();
+            formData.append('content', newSocialPost.content);
+            formData.append('visibility', 'Campus');
+            formData.append('isImportant', newSocialPost.isImportant);
+            formData.append('isAnonymous', newSocialPost.isAnonymous);
+            if (newSocialPost.tags) {
+                const tagsArray = newSocialPost.tags.split(',').map(t => t.trim()).filter(Boolean);
+                formData.append('tags', JSON.stringify(tagsArray));
+            }
+            if (newSocialPost.image) {
+                formData.append('images', newSocialPost.image);
+            }
+
+            await API.post('/social/posts', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            alert("Official Campus Social update published!");
+            setNewSocialPost({ content: '', isImportant: true, isAnonymous: false, image: null, tags: 'Official,Campus' });
+            fetchSocialPosts();
+        } catch (err) {
+            alert("Failed to publish social post: " + (err.response?.data?.message || err.message));
+        } finally {
+            setSocialSubmitting(false);
+        }
+    };
+
+    const handleViewComments = async (post) => {
+        setActiveCommentsPost(post);
+        setLoadingComments(true);
+        try {
+            const { data } = await API.get(`/social/comments/${post._id}`);
+            setCommentsList(data || []);
+        } catch (err) {
+            console.error("Error loading comments:", err);
+            setCommentsList([]);
+        } finally {
+            setLoadingComments(false);
+        }
+    };
+
+    const handleAddAdminComment = async (e) => {
+        e.preventDefault();
+        if (!newAdminComment.trim() || !activeCommentsPost) return;
+        setSubmittingComment(true);
+        try {
+            const { data } = await API.post('/social/comments', {
+                postId: activeCommentsPost._id,
+                content: newAdminComment
+            });
+            setNewAdminComment('');
+            handleViewComments(activeCommentsPost);
+            fetchSocialPosts();
+        } catch (err) {
+            alert("Failed to submit comment: " + (err.response?.data?.message || err.message));
+        } finally {
+            setSubmittingComment(false);
+        }
     };
 
     const fetchBroadcasts = async () => {
@@ -448,6 +552,7 @@ const AdminDashboard = () => {
                 complaintsCount={complaints.filter(c => c.status === 'Pending').length}
                 usersCount={pendingUsers.length}
                 broadcastsCount={broadcastsList.length}
+                socialCount={socialPostsList.length}
             />
 
             {/* Main Content Area */}
@@ -457,6 +562,7 @@ const AdminDashboard = () => {
                     <div>
                         <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                             {activeTab === 'overview' && 'Executive Overview'}
+                            {activeTab === 'social' && 'Campus Social & Feed Moderation'}
                             {activeTab === 'broadcasts' && 'Campus Broadcasts & Circulars'}
                             {activeTab === 'analytics' && 'Analytics & Resource Reports'}
                             {activeTab === 'operations' && 'Campus Operations & Dispatches'}
@@ -568,6 +674,400 @@ const AdminDashboard = () => {
                                 title="System Walkthrough & Architecture Tour"
                                 subtitle="Interactive overview of Smart Campus operational modules, AI forecasting, and emergency dispatch."
                             />
+                        </div>
+                    )}
+
+                    {/* TAB: CAMPUS SOCIAL MANAGEMENT (Moderation & Publisher) */}
+                    {activeTab === 'social' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+                            {/* Top Stats Overview */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 shadow-2xs flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Feed Posts</p>
+                                        <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{socialPostsList.length}</p>
+                                        <p className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold mt-0.5">Live campus stream</p>
+                                    </div>
+                                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center">
+                                        <MessageSquare size={22} />
+                                    </div>
+                                </div>
+
+                                <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 shadow-2xs flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Pinned Notices</p>
+                                        <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+                                            {socialPostsList.filter(p => p.isImportant).length}
+                                        </p>
+                                        <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold mt-0.5">High priority</p>
+                                    </div>
+                                    <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center">
+                                        <Pin size={22} />
+                                    </div>
+                                </div>
+
+                                <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 shadow-2xs flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Reactions</p>
+                                        <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+                                            {socialPostsList.reduce((acc, p) => acc + (p.likes?.length || 0), 0)}
+                                        </p>
+                                        <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold mt-0.5">Student engagement</p>
+                                    </div>
+                                    <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center justify-center">
+                                        <Heart size={22} />
+                                    </div>
+                                </div>
+
+                                <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 shadow-2xs flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Comments & Replies</p>
+                                        <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+                                            {socialPostsList.reduce((acc, p) => acc + (p.comments?.length || p.commentsCount || 0), 0)}
+                                        </p>
+                                        <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">Active discussions</p>
+                                    </div>
+                                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
+                                        <Activity size={22} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Official Campus Social Publisher */}
+                            <div className="bg-gradient-to-r from-violet-900 via-indigo-900 to-slate-900 rounded-3xl p-6 text-white shadow-xl border border-indigo-700/40 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-56 h-56 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-2xl bg-indigo-500/30 border border-indigo-400/30 flex items-center justify-center text-indigo-300 shadow-inner">
+                                            <Sparkles size={20} className="animate-pulse" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-bold text-white tracking-tight">Publish Official Campus Social Update</h3>
+                                            <p className="text-xs text-indigo-200">Post announcements, stories, or notices directly into the Campus Social feed with media support.</p>
+                                        </div>
+                                    </div>
+                                    <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                                        <ShieldCheck size={14} /> Admin Verified Post
+                                    </span>
+                                </div>
+
+                                <form onSubmit={handleCreateAdminSocialPost} className="space-y-4 pt-2">
+                                    <div>
+                                        <textarea
+                                            value={newSocialPost.content}
+                                            onChange={e => setNewSocialPost({ ...newSocialPost, content: e.target.value })}
+                                            rows={3}
+                                            placeholder="What's happening on campus? Write an official announcement, news, or discussion prompt..."
+                                            className="w-full text-sm p-3.5 bg-indigo-950/60 border border-indigo-700/60 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-400 text-white placeholder-indigo-300/50 resize-y"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-indigo-200 uppercase tracking-wider mb-1.5">
+                                                Tags (Comma separated)
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={newSocialPost.tags}
+                                                onChange={e => setNewSocialPost({ ...newSocialPost, tags: e.target.value })}
+                                                placeholder="e.g. Official, ExamUpdate, Hackathon, Notice"
+                                                className="w-full text-xs p-2.5 bg-indigo-950/60 border border-indigo-700/60 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 text-white placeholder-indigo-300/40"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-indigo-200 uppercase tracking-wider mb-1.5">
+                                                Attach Image / Banner
+                                            </label>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    id="admin-social-file"
+                                                    onChange={e => setNewSocialPost({ ...newSocialPost, image: e.target.files[0] || null })}
+                                                    className="hidden"
+                                                />
+                                                <label
+                                                    htmlFor="admin-social-file"
+                                                    className="cursor-pointer flex-1 flex items-center justify-center gap-2 p-2 rounded-xl bg-indigo-950/60 border border-indigo-700/60 hover:bg-indigo-900/60 text-xs font-semibold text-indigo-200 transition-colors truncate"
+                                                >
+                                                    <ImageIcon size={15} />
+                                                    <span className="truncate">{newSocialPost.image ? newSocialPost.image.name : 'Choose Image File...'}</span>
+                                                </label>
+                                                {newSocialPost.image && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setNewSocialPost({ ...newSocialPost, image: null })}
+                                                        className="p-2 bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 rounded-xl border border-rose-500/30 text-xs"
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2 border-t border-indigo-700/30">
+                                        <div className="flex items-center gap-5 w-full sm:w-auto">
+                                            <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-indigo-200 hover:text-white">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={newSocialPost.isImportant}
+                                                    onChange={e => setNewSocialPost({ ...newSocialPost, isImportant: e.target.checked })}
+                                                    className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 accent-indigo-500"
+                                                />
+                                                <span>📌 Pin to Top (Important Notice)</span>
+                                            </label>
+
+                                            <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-indigo-200 hover:text-white">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={newSocialPost.isAnonymous}
+                                                    onChange={e => setNewSocialPost({ ...newSocialPost, isAnonymous: e.target.checked })}
+                                                    className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 accent-indigo-500"
+                                                />
+                                                <span>🎭 Post Anonymously</span>
+                                            </label>
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            disabled={socialSubmitting || !newSocialPost.content.trim()}
+                                            className={`w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all ${
+                                                socialSubmitting || !newSocialPost.content.trim()
+                                                    ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                                                    : 'bg-indigo-500 hover:bg-indigo-400 text-white shadow-indigo-600/30 hover:scale-[1.02] active:scale-[0.98]'
+                                            }`}
+                                        >
+                                            <Send size={15} />
+                                            {socialSubmitting ? 'Publishing...' : 'Publish to Campus Social'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            {/* Search, Filter & Action Bar */}
+                            <div className="bg-white dark:bg-slate-900/90 p-4 rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-2xs flex flex-col md:flex-row justify-between items-center gap-4">
+                                <div className="relative w-full md:w-80">
+                                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search by text, author, or tag..."
+                                        value={socialSearch}
+                                        onChange={e => setSocialSearch(e.target.value)}
+                                        className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-white/10 rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-100"
+                                    />
+                                    {socialSearch && (
+                                        <button onClick={() => setSocialSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                            <X size={14} />
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
+                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider whitespace-nowrap">Filter:</span>
+                                    {[
+                                        { key: 'All', label: 'All Posts' },
+                                        { key: 'Pinned', label: '📌 Pinned' },
+                                        { key: 'Anonymous', label: '🎭 Anonymous' },
+                                        { key: 'Media', label: '🖼️ With Media' },
+                                    ].map(f => (
+                                        <button
+                                            key={f.key}
+                                            onClick={() => setSocialFilter(f.key)}
+                                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                                                socialFilter === f.key
+                                                    ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/25'
+                                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                            }`}
+                                        >
+                                            {f.label}
+                                        </button>
+                                    ))}
+                                    <button
+                                        onClick={fetchSocialPosts}
+                                        disabled={socialLoading}
+                                        className="p-1.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs font-bold transition-colors ml-1"
+                                        title="Refresh Social Feed"
+                                    >
+                                        {socialLoading ? 'Refreshing...' : '🔄 Refresh'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Feed List Grid */}
+                            <div className="space-y-4">
+                                {(() => {
+                                    const filtered = socialPostsList.filter(p => {
+                                        if (socialFilter === 'Pinned' && !p.isImportant) return false;
+                                        if (socialFilter === 'Anonymous' && !p.isAnonymous) return false;
+                                        if (socialFilter === 'Media' && (!p.images || p.images.length === 0)) return false;
+
+                                        const q = socialSearch.toLowerCase();
+                                        if (!q) return true;
+
+                                        const authorName = (p.authorId?.name || (p.isAnonymous ? 'Anonymous' : '')).toLowerCase();
+                                        const content = (p.content || '').toLowerCase();
+                                        const tagsMatch = Array.isArray(p.tags) && p.tags.some(t => t.toLowerCase().includes(q));
+
+                                        return authorName.includes(q) || content.includes(q) || tagsMatch;
+                                    });
+
+                                    if (filtered.length === 0) {
+                                        return (
+                                            <div className="bg-white dark:bg-slate-900/90 rounded-3xl p-12 text-center border border-slate-200/80 dark:border-white/10 shadow-2xs">
+                                                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 flex items-center justify-center">
+                                                    <MessageSquare size={28} />
+                                                </div>
+                                                <h4 className="text-base font-bold text-slate-900 dark:text-white mb-1">No Social Posts Found</h4>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                                                    {socialSearch || socialFilter !== 'All'
+                                                        ? 'No posts match your current search or filter criteria. Try resetting the filters.'
+                                                        : 'No campus social posts have been published yet. Use the publisher card above to create the first one!'}
+                                                </p>
+                                            </div>
+                                        );
+                                    }
+
+                                    return (
+                                        <div className="grid grid-cols-1 gap-5">
+                                            {filtered.map(post => {
+                                                const authorRole = post.isAnonymous ? 'Student' : (post.authorId?.role || 'Student');
+                                                const authorName = post.isAnonymous ? 'Anonymous Member' : (post.authorId?.name || 'Campus User');
+                                                const hasImages = post.images && post.images.length > 0;
+
+                                                return (
+                                                    <div
+                                                        key={post._id}
+                                                        className={`p-6 rounded-3xl bg-white dark:bg-slate-900/90 border transition-all duration-200 shadow-2xs hover:shadow-md ${
+                                                            post.isImportant
+                                                                ? 'border-amber-400/40 bg-amber-500/[0.02] dark:border-amber-500/30'
+                                                                : 'border-slate-200/80 dark:border-white/10'
+                                                        }`}
+                                                    >
+                                                        {/* Post Header */}
+                                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-white/5">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm shadow-xs ${
+                                                                    post.isAnonymous
+                                                                        ? 'bg-slate-800 text-slate-300'
+                                                                        : authorRole === 'Admin'
+                                                                        ? 'bg-gradient-to-tr from-indigo-500 to-purple-600 text-white'
+                                                                        : authorRole === 'Security'
+                                                                        ? 'bg-gradient-to-tr from-emerald-500 to-teal-600 text-white'
+                                                                        : 'bg-gradient-to-tr from-blue-500 to-cyan-600 text-white'
+                                                                }`}>
+                                                                    {post.isAnonymous ? '🎭' : authorName.charAt(0).toUpperCase()}
+                                                                </div>
+                                                                <div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-sm font-bold text-slate-900 dark:text-white">
+                                                                            {authorName}
+                                                                        </span>
+                                                                        <RoleBadge role={authorRole} />
+                                                                        {post.isImportant && (
+                                                                            <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1">
+                                                                                <Pin size={11} /> PINNED
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-2 mt-0.5">
+                                                                        <Clock size={12} />
+                                                                        <span>{new Date(post.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                                                        <span>•</span>
+                                                                        <span>Visibility: {post.visibility || 'Campus'}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Actions */}
+                                                            <div className="flex items-center gap-2">
+                                                                <button
+                                                                    onClick={() => handleViewComments(post)}
+                                                                    className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 border border-slate-200/80 dark:border-white/10 text-xs font-bold transition-all flex items-center gap-1.5"
+                                                                >
+                                                                    <MessageSquare size={14} />
+                                                                    <span>Discussion ({post.comments?.length || post.commentsCount || 0})</span>
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDeleteSocialPost(post._id)}
+                                                                    className="p-1.5 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-bold transition-all flex items-center gap-1.5"
+                                                                    title="Delete post permanently as Admin"
+                                                                >
+                                                                    <Trash2 size={14} />
+                                                                    <span className="hidden sm:inline">Delete</span>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Post Content */}
+                                                        <div className="py-4 space-y-3">
+                                                            <p className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-wrap font-medium">
+                                                                {post.content}
+                                                            </p>
+
+                                                            {/* Image Attachments */}
+                                                            {hasImages && (
+                                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                                                                    {post.images.map((img, idx) => {
+                                                                        const imgUrl = img.startsWith('http') ? img : `${SERVER_URL}${img.startsWith('/') ? img : '/' + img}`;
+                                                                        return (
+                                                                            <div
+                                                                                key={idx}
+                                                                                onClick={() => setViewImage(img.startsWith('/') ? img.slice(1) : img)}
+                                                                                className="cursor-pointer group relative rounded-2xl overflow-hidden border border-slate-200/80 dark:border-white/10 bg-slate-100 dark:bg-slate-800 max-h-64 flex items-center justify-center"
+                                                                            >
+                                                                                <img
+                                                                                    src={imgUrl}
+                                                                                    alt={`Post attachment ${idx + 1}`}
+                                                                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                                                                />
+                                                                                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1.5">
+                                                                                    <ExternalLink size={16} /> View Fullscreen
+                                                                                </div>
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            )}
+
+                                                            {/* Tags */}
+                                                            {Array.isArray(post.tags) && post.tags.length > 0 && (
+                                                                <div className="flex flex-wrap gap-1.5 pt-1">
+                                                                    {post.tags.map((tag, tIdx) => (
+                                                                        <span
+                                                                            key={tIdx}
+                                                                            className="text-[11px] font-semibold px-2.5 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-white/5"
+                                                                        >
+                                                                            #{tag}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Post Footer Stats */}
+                                                        <div className="pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                                                            <div className="flex items-center gap-4">
+                                                                <span className="flex items-center gap-1.5 font-semibold text-rose-600 dark:text-rose-400">
+                                                                    <Heart size={14} className="fill-rose-500/20" /> {post.likes?.length || 0} Likes
+                                                                </span>
+                                                                <span className="flex items-center gap-1.5 font-semibold text-indigo-600 dark:text-indigo-400">
+                                                                    <MessageSquare size={14} /> {post.comments?.length || post.commentsCount || 0} Comments
+                                                                </span>
+                                                            </div>
+                                                            <span className="text-[11px] text-slate-400">Post ID: {post._id}</span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
                         </div>
                     )}
 
@@ -1304,6 +1804,101 @@ const AdminDashboard = () => {
                                             className="px-5 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-200 transition-all flex items-center gap-2"
                                         >
                                             <CheckCircle size={16} /> Save Changes
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* SOCIAL COMMENTS MODERATION MODAL */}
+                    {activeCommentsPost && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-xl w-full p-6 border border-slate-200 dark:border-white/10 space-y-4 max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200">
+                                {/* Header */}
+                                <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5">
+                                    <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+                                        <div className="p-2 bg-indigo-50 dark:bg-indigo-950/50 rounded-xl">
+                                            <MessageSquare size={18} />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-slate-900 dark:text-white text-base">Thread Discussion Moderation</h3>
+                                            <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                                                Post by {activeCommentsPost.isAnonymous ? 'Anonymous' : (activeCommentsPost.authorId?.name || 'Campus User')}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setActiveCommentsPost(null)}
+                                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                    >
+                                        <X size={18} />
+                                    </button>
+                                </div>
+
+                                {/* Original Post Snippet */}
+                                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-white/5 text-xs text-slate-700 dark:text-slate-300">
+                                    <p className="line-clamp-3 font-medium">{activeCommentsPost.content}</p>
+                                </div>
+
+                                {/* Comments List */}
+                                <div className="flex-1 overflow-y-auto space-y-3 py-2 pr-1 custom-scrollbar min-h-[160px] max-h-[300px]">
+                                    {loadingComments ? (
+                                        <div className="text-center py-8 text-xs text-slate-400 font-semibold">
+                                            Loading discussion comments...
+                                        </div>
+                                    ) : commentsList.length === 0 ? (
+                                        <div className="text-center py-8 text-xs text-slate-400 font-medium">
+                                            No comments yet on this post.
+                                        </div>
+                                    ) : (
+                                        commentsList.map(comment => (
+                                            <div
+                                                key={comment._id}
+                                                className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-white/5 space-y-1"
+                                            >
+                                                <div className="flex items-center justify-between text-[11px]">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                                                            {comment.authorId?.name || 'Campus Member'}
+                                                        </span>
+                                                        <span className="text-[10px] px-2 py-0.2 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold">
+                                                            {comment.authorId?.role || 'Student'}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-slate-400 text-[10px]">
+                                                        {new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-normal">
+                                                    {comment.content}
+                                                </p>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+
+                                {/* Post Official Admin Remark / Reply */}
+                                <form onSubmit={handleAddAdminComment} className="pt-2 border-t border-slate-100 dark:border-white/5 space-y-2">
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={newAdminComment}
+                                            onChange={e => setNewAdminComment(e.target.value)}
+                                            placeholder="Write an official admin comment or moderation note..."
+                                            className="flex-1 text-xs p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-white/10 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white"
+                                        />
+                                        <button
+                                            type="submit"
+                                            disabled={submittingComment || !newAdminComment.trim()}
+                                            className={`px-4 py-2 text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-all ${
+                                                submittingComment || !newAdminComment.trim()
+                                                    ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                                                    : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                                            }`}
+                                        >
+                                            <Send size={13} />
+                                            <span>Reply</span>
                                         </button>
                                     </div>
                                 </form>
