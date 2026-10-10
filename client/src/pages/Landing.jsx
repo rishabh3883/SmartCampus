@@ -231,26 +231,26 @@ const Landing = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 selection:bg-emerald-100 selection:text-emerald-900 transition-colors duration-200">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 selection:bg-[#faede5] selection:text-[#c75b3c] transition-colors duration-200">
             <Navbar />
 
             {/* 1. HERO SECTION */}
             <header className="relative pt-16 pb-20 lg:pt-28 lg:pb-32 overflow-hidden border-b border-slate-200/80 dark:border-slate-800/80">
                 {/* Ambient Gradient Backgrounds */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full overflow-hidden -z-10 pointer-events-none">
-                    <div className="absolute -top-32 left-1/4 w-[600px] h-[600px] bg-emerald-500/10 dark:bg-emerald-500/15 rounded-full blur-3xl"></div>
-                    <div className="absolute top-20 right-1/4 w-[500px] h-[500px] bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl"></div>
+                    <div className="absolute -top-32 left-1/4 w-[600px] h-[600px] bg-[#e2725b]/10 dark:bg-[#e2725b]/15 rounded-full blur-3xl"></div>
+                    <div className="absolute top-20 right-1/4 w-[500px] h-[500px] bg-[#c75b3c]/10 dark:bg-[#c75b3c]/15 rounded-full blur-3xl"></div>
                 </div>
 
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs mb-8 animate-enter">
-                        <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span className="flex h-2 w-2 rounded-full bg-[#e2725b] animate-pulse"></span>
                         <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Award-Standard Smart Campus Operating System</span>
                     </div>
 
                     <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1] mb-6 animate-enter">
                         The Future of <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-600">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#e2725b] via-[#c75b3c] to-[#883a23]">
                             Campus Management
                         </span>
                     </h1>
@@ -263,7 +263,7 @@ const Landing = () => {
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-lg mx-auto mb-16 animate-enter">
                         <button
                             onClick={() => navigate('/signup')}
-                            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-sm shadow-lg shadow-emerald-500/25 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer group"
+                            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-[#e2725b] via-[#c75b3c] to-[#a8482b] hover:from-[#e9826c] hover:to-[#c75b3c] text-white font-bold text-sm shadow-lg shadow-[#e2725b]/25 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer group"
                         >
                             <span>Get Started</span>
                             <ArrowRight size={17} className="group-hover:translate-x-1 transition-transform" />
@@ -273,7 +273,7 @@ const Landing = () => {
                             onClick={scrollToDemo}
                             className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition-all flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-800 shadow-xs cursor-pointer group"
                         >
-                            <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <div className="w-6 h-6 rounded-full bg-[#faede5] dark:bg-[#3c160b] text-[#e2725b] dark:text-[#f5dacb] flex items-center justify-center group-hover:scale-110 transition-transform">
                                 <Play size={12} className="ml-0.5" />
                             </div>
                             <span>Watch Project Video</span>

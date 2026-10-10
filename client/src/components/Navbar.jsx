@@ -52,12 +52,12 @@ const Navbar = () => {
                     className="flex items-center gap-3 cursor-pointer group select-none"
                     onClick={() => navigate(getHomePath())}
                 >
-                    <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-emerald-500/20 transform group-hover:scale-105 transition-transform shrink-0">
+                    <div className="w-9 h-9 bg-gradient-to-br from-[#e2725b] via-[#c75b3c] to-[#883a23] rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-[#e2725b]/25 transform group-hover:scale-105 transition-transform shrink-0">
                         <Sparkles size={18} />
                     </div>
                     <div className="flex flex-col min-w-0">
                         <span className="text-lg font-black text-slate-900 dark:text-white leading-tight tracking-tight">
-                            Smart<span className="text-emerald-500">Campus</span>
+                            Smart<span className="text-[#e2725b]">Campus</span>
                         </span>
                         {user ? (
                             <div className="flex items-center gap-1 mt-0.5">
@@ -74,19 +74,19 @@ const Navbar = () => {
                 {/* Landing Page Navigation Links */}
                 {isLanding && !user && (
                     <div className="hidden lg:flex items-center gap-6 text-xs font-bold text-slate-600 dark:text-slate-300">
-                        <button onClick={() => handleAnchorClick('features')} className="hover:text-emerald-500 transition-colors cursor-pointer">
+                        <button onClick={() => handleAnchorClick('features')} className="hover:text-[#e2725b] transition-colors cursor-pointer">
                             Features
                         </button>
-                        <button onClick={() => handleAnchorClick('portals')} className="hover:text-emerald-500 transition-colors cursor-pointer">
+                        <button onClick={() => handleAnchorClick('portals')} className="hover:text-[#e2725b] transition-colors cursor-pointer">
                             Portals
                         </button>
-                        <button onClick={() => handleAnchorClick('how-it-works')} className="hover:text-emerald-500 transition-colors cursor-pointer">
+                        <button onClick={() => handleAnchorClick('how-it-works')} className="hover:text-[#e2725b] transition-colors cursor-pointer">
                             How It Works
                         </button>
-                        <button onClick={() => handleAnchorClick('security')} className="hover:text-emerald-500 transition-colors cursor-pointer">
+                        <button onClick={() => handleAnchorClick('security')} className="hover:text-[#e2725b] transition-colors cursor-pointer">
                             Security
                         </button>
-                        <button onClick={() => handleAnchorClick('faq')} className="hover:text-emerald-500 transition-colors cursor-pointer">
+                        <button onClick={() => handleAnchorClick('faq')} className="hover:text-[#e2725b] transition-colors cursor-pointer">
                             FAQ
                         </button>
                     </div>
@@ -103,12 +103,12 @@ const Navbar = () => {
                             onClick={() => navigate(getHomePath())}
                             className="hidden sm:flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-slate-700 cursor-pointer"
                         >
-                            <LayoutDashboard size={14} className="text-emerald-500" />
+                            <LayoutDashboard size={14} className="text-[#e2725b]" />
                             <span>My Portal</span>
                         </button>
 
                         <div className="hidden md:flex items-center gap-2.5 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 shadow-xs">
-                            <div className="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 flex items-center justify-center font-bold text-xs">
+                            <div className="w-7 h-7 rounded-full bg-[#faede5] dark:bg-[#3c160b] text-[#c75b3c] dark:text-[#f5dacb] border border-[#e29b7f] dark:border-[#883a23] flex items-center justify-center font-bold text-xs">
                                 {user.name ? user.name.charAt(0).toUpperCase() : <User size={14} />}
                             </div>
                             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 pr-1 max-w-[130px] truncate">{user.name}</span>
@@ -127,7 +127,7 @@ const Navbar = () => {
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => navigate('/login')}
-                            className="text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-emerald-500 px-3 py-2 transition-colors cursor-pointer"
+                            className="text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-[#e2725b] px-3 py-2 transition-colors cursor-pointer"
                         >
                             Log In
                         </button>

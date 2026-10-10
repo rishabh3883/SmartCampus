@@ -10,77 +10,103 @@
 
 @import "tailwindcss";
 
-/* --- SmartCampus Design System Tokens --- */
+@theme {
+  --color-terracotta-50: #fdf7f4;
+  --color-terracotta-100: #faede5;
+  --color-terracotta-200: #f5dacb;
+  --color-terracotta-300: #ecc0ab;
+  --color-terracotta-400: #e29b7f;
+  --color-terracotta-500: #e2725b;
+  --color-terracotta-600: #c75b3c;
+  --color-terracotta-700: #a8482b;
+  --color-terracotta-800: #883a23;
+  --color-terracotta-900: #6f301e;
+  --color-terracotta-950: #3c160b;
+
+  --color-clay-50: #faf7f4;
+  --color-clay-100: #f3ebe3;
+  --color-clay-200: #e6d5c6;
+  --color-clay-300: #d4b8a2;
+  --color-clay-400: #be977c;
+  --color-clay-500: #a97c5e;
+  --color-clay-600: #93664a;
+  --color-clay-700: #77503b;
+  --color-clay-800: #624333;
+  --color-clay-900: #51382b;
+  --color-clay-950: #2c1c15;
+}
+
+/* --- SmartCampus Figma Terracotta Design System Tokens --- */
 :root {
   /* Typography */
   --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* Brand Green (50-950) */
-  --color-brand-50: #ecfdf5;
-  --color-brand-100: #d1fae5;
-  --color-brand-200: #a7f3d0;
-  --color-brand-300: #6ee7b7;
-  --color-brand-400: #34d399;
-  --color-brand-500: #10b981;
-  --color-brand-600: #059669;
-  --color-brand-700: #047857;
-  --color-brand-800: #065f46;
-  --color-brand-900: #064e3b;
-  --color-brand-950: #022c22;
+  /* Figma Terracotta Brand Palette (#E2725B / #C75B3C) */
+  --color-brand-50: #fdf7f4;
+  --color-brand-100: #faede5;
+  --color-brand-200: #f5dacb;
+  --color-brand-300: #ecc0ab;
+  --color-brand-400: #e29b7f;
+  --color-brand-500: #e2725b;
+  --color-brand-600: #c75b3c;
+  --color-brand-700: #a8482b;
+  --color-brand-800: #883a23;
+  --color-brand-900: #6f301e;
+  --color-brand-950: #3c160b;
 
-  /* Secondary Indigo (50-950) */
-  --color-secondary-50: #eef2ff;
-  --color-secondary-100: #e0e7ff;
-  --color-secondary-200: #c7d2fe;
-  --color-secondary-300: #a5b4fc;
-  --color-secondary-400: #818cf8;
-  --color-secondary-500: #6366f1;
-  --color-secondary-600: #4f46e5;
-  --color-secondary-700: #4338ca;
-  --color-secondary-800: #3730a3;
-  --color-secondary-900: #312e81;
+  /* Secondary Earthy Adobe & Warm Sand */
+  --color-secondary-50: #faf6f2;
+  --color-secondary-100: #f3ebe1;
+  --color-secondary-200: #e5d6c5;
+  --color-secondary-300: #d3bca4;
+  --color-secondary-400: #bd9e82;
+  --color-secondary-500: #a78263;
+  --color-secondary-600: #906b4d;
+  --color-secondary-700: #74543d;
+  --color-secondary-800: #5f4533;
+  --color-secondary-900: #4e392b;
 
   /* Role Accent Tokens */
-  --role-admin: #8B5CF6;
-  --role-admin-bg: rgba(139, 92, 246, 0.12);
-  --role-student: #3B82F6;
-  --role-student-bg: rgba(59, 130, 246, 0.12);
-  --role-staff: #F59E0B;
-  --role-staff-bg: rgba(245, 158, 11, 0.12);
-  --role-security: #EF4444;
-  --role-security-bg: rgba(239, 68, 68, 0.12);
+  --role-admin: #c75b3c;
+  --role-admin-bg: rgba(199, 91, 60, 0.12);
+  --role-student: #e2725b;
+  --role-student-bg: rgba(226, 114, 91, 0.12);
+  --role-staff: #d97706;
+  --role-staff-bg: rgba(217, 119, 6, 0.12);
+  --role-security: #dc2626;
+  --role-security-bg: rgba(220, 38, 38, 0.12);
 
   /* Semantic State Colors */
-  --semantic-success: #10B981;
-  --semantic-warning: #F59E0B;
-  --semantic-danger: #EF4444;
-  --semantic-info: #3B82F6;
+  --semantic-success: #16a34a;
+  --semantic-warning: #ea580c;
+  --semantic-danger: #dc2626;
+  --semantic-info: #e2725b;
 
-  /* Light Surface Palette */
-  --bg-app: #f8fafc;
+  /* Light Surface Palette (Warm Linen & Sunbaked Ceramic) */
+  --bg-app: #faf7f4;
   --bg-surface: #ffffff;
   --bg-surface-elevated: #ffffff;
-  --bg-surface-subtle: #f1f5f9;
-  --bg-surface-glass: rgba(255, 255, 255, 0.85);
+  --bg-surface-subtle: #f5ede6;
+  --bg-surface-glass: rgba(255, 255, 255, 0.88);
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-tertiary: #94a3b8;
+  --text-primary: #291a13;
+  --text-secondary: #5c4338;
+  --text-tertiary: #9b7f73;
   --text-inverse: #ffffff;
 
-  --border-subtle: #f1f5f9;
-  --border-default: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --border-glass: rgba(255, 255, 255, 0.6);
+  --border-subtle: #f4eae1;
+  --border-default: #ebd9cc;
+  --border-strong: #d7bead;
+  --border-glass: rgba(255, 255, 255, 0.7);
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-  --shadow-brand: 0 10px 25px -5px rgba(16, 185, 129, 0.25);
+  /* Shadows with Warm Terracotta Ambient Glow */
+  --shadow-sm: 0 1px 2px 0 rgba(60, 22, 11, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(60, 22, 11, 0.08), 0 2px 4px -2px rgba(60, 22, 11, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(60, 22, 11, 0.09), 0 4px 6px -4px rgba(60, 22, 11, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(60, 22, 11, 0.12), 0 8px 10px -6px rgba(60, 22, 11, 0.05);
+  --shadow-brand: 0 10px 25px -5px rgba(226, 114, 91, 0.32);
 
   /* Radius */
   --radius-sm: 8px;
@@ -98,29 +124,29 @@
   color-scheme: light;
 }
 
-/* --- Dark Theme Palette --- */
+/* --- Dark Theme Palette (Deep Terracotta Obsidian & Roasted Clay) --- */
 html.dark {
-  --bg-app: #090d16;
-  --bg-surface: #0f172a;
-  --bg-surface-elevated: #1e293b;
-  --bg-surface-subtle: #141e33;
-  --bg-surface-glass: rgba(15, 23, 42, 0.85);
+  --bg-app: #120b08;
+  --bg-surface: #1b120d;
+  --bg-surface-elevated: #261a13;
+  --bg-surface-subtle: #21150f;
+  --bg-surface-glass: rgba(27, 18, 13, 0.88);
 
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-tertiary: #64748b;
-  --text-inverse: #0f172a;
+  --text-primary: #fbf7f4;
+  --text-secondary: #c9b4a8;
+  --text-tertiary: #8f776a;
+  --text-inverse: #1b120d;
 
-  --border-subtle: #1e293b;
-  --border-default: #334155;
-  --border-strong: #475569;
+  --border-subtle: #291a13;
+  --border-default: #3d291e;
+  --border-strong: #593c2c;
   --border-glass: rgba(255, 255, 255, 0.08);
 
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
-  --shadow-brand: 0 10px 25px -5px rgba(16, 185, 129, 0.35);
+  --shadow-brand: 0 10px 25px -5px rgba(226, 114, 91, 0.4);
 
   color-scheme: dark;
 }
@@ -154,7 +180,7 @@ h1, h2, h3, h4, h5, h6 {
   font-feature-settings: 'tnum';
 }
 
-/* Custom Scrollbar */
+/* Custom Terracotta Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -165,7 +191,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.3);
+  background: rgba(226, 114, 91, 0.28);
   border-radius: var(--radius-full);
 }
 
@@ -235,15 +261,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-brand-500), var(--color-brand-600));
+  background: linear-gradient(135deg, #e2725b, #c75b3c);
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: var(--shadow-brand);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--color-brand-400), var(--color-brand-500));
-  box-shadow: 0 12px 28px -5px rgba(16, 185, 129, 0.35);
+  background: linear-gradient(135deg, #e9826c, #e2725b);
+  box-shadow: 0 12px 28px -5px rgba(226, 114, 91, 0.45);
 }
 
 .btn-secondary {
@@ -294,8 +320,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .input-field:focus {
-  border-color: var(--color-brand-500);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+  border-color: #e2725b;
+  box-shadow: 0 0 0 3px rgba(226, 114, 91, 0.2);
 }
 
 .input-field::placeholder {
@@ -316,6 +342,19 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Terracotta Highlights & Glow Helpers */
+.bg-terracotta-gradient {
+  background: linear-gradient(135deg, #e2725b 0%, #c75b3c 50%, #883a23 100%);
+}
+
+.text-terracotta {
+  color: #e2725b;
+}
+
+.border-terracotta {
+  border-color: #e2725b;
 }
 
 /* Prefers reduced motion */
