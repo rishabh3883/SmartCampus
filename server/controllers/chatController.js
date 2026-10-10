@@ -98,3 +98,45 @@ exports.getUsersForChat = async (req, res) => {
         res.status(500).json({ message: 'Error fetching users', error: error.message });
     }
 };
+
+exports.deleteMessage = async (req, res) => {
+    try {
+        const { messageId } = req.params;
+        const userId = req.user.id;
+        const userRole = req.user.role;
+
+        const message = await ChatMessage.findById(messageId);
+        if (!message) {
+            return res.status(404).json({ message: 'Message not found' });
+        }
+
+        // Only Admin or the message sender/owner can delete
+        const isOwner = String(message.senderId) === String(userId);
+        const isAdmin = userRole === 'Admin';
+
+        if (!isOwner && !isAdmin) {
+            return res.status(403).json({ message: 'Unauthorized: Only the sender or an Admin can delete this message.' });
+        }
+
+        const conversationId = message.conversationId;
+        await ChatMessage.findByIdAndDelete(messageId);
+
+        // Update conversation's lastMessage if needed
+        const conversation = await Conversation.findById(conversationId);
+        if (conversation && String(conversation.lastMessage) === String(messageId)) {
+            const latestMessage = await ChatMessage.findOne({ conversationId }).sort({ createdAt: -1 });
+            conversation.lastMessage = latestMessage ? latestMessage._id : null;
+            await conversation.save();
+        }
+
+        // Real-time broadcast deletion to all participants in this chat
+        const io = req.app.get('socketio');
+        if (io) {
+            io.to(String(conversationId)).emit('delete-message', { messageId, conversationId });
+        }
+
+        res.status(200).json({ message: 'Message deleted successfully', messageId, conversationId });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting message', error: error.message });
+    }
+};

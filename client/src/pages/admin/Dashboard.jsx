@@ -2,14 +2,19 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/Navbar';
 import API from '../../services/api';
 import { SERVER_URL } from '../../config';
-import { AlertTriangle, Droplets, Zap, PieChart as PieIcon, CheckCircle, XCircle, Clock, FileText, Send, BookOpen, Calendar, Activity, Shield, Users, UserMinus, UserCheck, Cpu, TrendingUp, LayoutDashboard, Radio, LogOut, FileSpreadsheet, Scan } from 'lucide-react';
+import socket from '../../services/socket';
+import {
+    AlertTriangle, Droplets, Zap, PieChart as PieIcon, CheckCircle, XCircle,
+    Clock, FileText, Send, BookOpen, Calendar, Activity, Shield, Users,
+    UserMinus, UserCheck, Cpu, TrendingUp, LayoutDashboard, Radio, LogOut,
+    FileSpreadsheet, Scan, Edit2, Trash2, Megaphone, Search, X, ShieldCheck
+} from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import InsightsWidget from '../../components/InsightsWidget';
-
-
+import ProjectVideoPlayer from '../../components/ProjectVideoPlayer';
 import { useNavigate, Link } from 'react-router-dom';
 
-const Sidebar = ({ activeTab, setActiveTab, complaintsCount, usersCount }) => {
+const Sidebar = ({ activeTab, setActiveTab, complaintsCount, usersCount, broadcastsCount }) => {
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -39,6 +44,7 @@ const Sidebar = ({ activeTab, setActiveTab, complaintsCount, usersCount }) => {
             <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1 custom-scrollbar">
                 <p className="px-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Main Menu</p>
                 <SidebarItem id="overview" label="Overview" icon={LayoutDashboard} activeTab={activeTab} setActiveTab={setActiveTab} />
+                <SidebarItem id="broadcasts" label="Broadcasts" icon={Megaphone} activeTab={activeTab} setActiveTab={setActiveTab} count={broadcastsCount} />
                 <SidebarItem id="analytics" label="Analytics" icon={Activity} activeTab={activeTab} setActiveTab={setActiveTab} />
                 <SidebarItem id="operations" label="Operations" icon={Radio} activeTab={activeTab} setActiveTab={setActiveTab} count={complaintsCount} />
                 <SidebarItem id="users" label="User Mgmt" icon={Users} activeTab={activeTab} setActiveTab={setActiveTab} count={usersCount} />
@@ -120,7 +126,14 @@ const AdminDashboard = () => {
     const [comparison, setComparison] = useState(null);
     const [chartData, setChartData] = useState([]);
     const [impactStats, setImpactStats] = useState({ foodDonated: 0, foodComposted: 0 });
-    const [message, setMessage] = useState({ content: '', role: 'Staff' });
+    const [message, setMessage] = useState({ content: '', role: 'All' });
+    
+    // Broadcast Management State
+    const [broadcastsList, setBroadcastsList] = useState([]);
+    const [editingBroadcast, setEditingBroadcast] = useState(null);
+    const [broadcastSearch, setBroadcastSearch] = useState('');
+    const [broadcastFilter, setBroadcastFilter] = useState('All');
+    const [broadcastSubmitting, setBroadcastSubmitting] = useState(false);
 
     useEffect(() => {
         fetchInitialData();
@@ -128,7 +141,27 @@ const AdminDashboard = () => {
             fetchInitialData();
             fetchAnalytics();
         }, 30000);
-        return () => clearInterval(interval);
+
+        const handleNewBroadcast = (newMsg) => {
+            setBroadcastsList(prev => [newMsg, ...prev.filter(b => b._id !== newMsg._id)]);
+        };
+        const handleUpdateBroadcastSocket = (updatedMsg) => {
+            setBroadcastsList(prev => prev.map(b => b._id === updatedMsg._id ? updatedMsg : b));
+        };
+        const handleDeleteBroadcastSocket = ({ id }) => {
+            setBroadcastsList(prev => prev.filter(b => b._id !== id));
+        };
+
+        socket.on('new-broadcast', handleNewBroadcast);
+        socket.on('update-broadcast', handleUpdateBroadcastSocket);
+        socket.on('delete-broadcast', handleDeleteBroadcastSocket);
+
+        return () => {
+            clearInterval(interval);
+            socket.off('new-broadcast', handleNewBroadcast);
+            socket.off('update-broadcast', handleUpdateBroadcastSocket);
+            socket.off('delete-broadcast', handleDeleteBroadcastSocket);
+        };
     }, [selectedHostel, selectedDate]);
 
     useEffect(() => {
@@ -137,24 +170,34 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         if (activeTab === 'users') fetchAllUsers();
+        if (activeTab === 'broadcasts') fetchBroadcasts();
     }, [activeTab, userTab]);
 
     const fetchInitialData = async () => {
         try {
-            const [alertsRes, complaintsRes, hostelsRes, usersRes, statsRes] = await Promise.all([
+            const [alertsRes, complaintsRes, hostelsRes, usersRes, statsRes, msgRes] = await Promise.all([
                 API.get('/alerts'),
                 API.get('/complaints'),
                 API.get('/resources/hostels'),
                 API.get('/users/pending'),
-                API.get('/resources/stats')
+                API.get('/resources/stats'),
+                API.get('/messages')
             ]);
-            setAlerts(alertsRes.data);
-            setComplaints(complaintsRes.data);
-            setHostels(hostelsRes.data);
+            setAlerts(alertsRes.data || []);
+            setComplaints(complaintsRes.data || []);
+            setHostels(hostelsRes.data || []);
             if (usersRes?.data) setPendingUsers(usersRes.data);
-            if (hostelsRes.data.length > 0 && !selectedHostel) setSelectedHostel(hostelsRes.data[0]._id);
+            if (hostelsRes.data?.length > 0 && !selectedHostel) setSelectedHostel(hostelsRes.data[0]._id);
             if (statsRes?.data) setImpactStats(statsRes.data);
+            if (msgRes?.data) setBroadcastsList(msgRes.data);
         } catch (err) { console.error("Dashboard Fetch Error:", err); }
+    };
+
+    const fetchBroadcasts = async () => {
+        try {
+            const { data } = await API.get('/messages');
+            setBroadcastsList(data || []);
+        } catch (err) { console.error("Error fetching broadcasts:", err); }
     };
 
     const fetchAnalytics = async () => {
@@ -196,11 +239,42 @@ const AdminDashboard = () => {
     };
 
     const sendMessage = async () => {
+        if (!message.content.trim()) return alert("Please enter announcement content");
+        setBroadcastSubmitting(true);
         try {
             await API.post('/messages', { content: message.content, receiverRole: message.role });
-            alert('Message sent!');
+            alert('Broadcast Announcement published successfully!');
             setMessage({ ...message, content: '' });
-        } catch (err) { alert('Failed to send message.'); }
+            fetchBroadcasts();
+        } catch (err) { alert('Failed to send broadcast.'); }
+        finally { setBroadcastSubmitting(false); }
+    };
+
+    const handleUpdateBroadcast = async (e) => {
+        if (e) e.preventDefault();
+        if (!editingBroadcast || !editingBroadcast.content.trim()) return;
+        try {
+            await API.put(`/messages/${editingBroadcast._id}`, {
+                content: editingBroadcast.content,
+                receiverRole: editingBroadcast.receiverRole
+            });
+            alert('Broadcast announcement updated successfully!');
+            setEditingBroadcast(null);
+            fetchBroadcasts();
+        } catch (err) {
+            alert('Failed to update broadcast: ' + (err.response?.data?.message || err.message));
+        }
+    };
+
+    const handleDeleteBroadcast = async (id) => {
+        if (!window.confirm("⚠️ Are you sure you want to delete this broadcast post permanently?")) return;
+        try {
+            await API.delete(`/messages/${id}`);
+            setBroadcastsList(prev => prev.filter(b => b._id !== id));
+            alert('Broadcast post deleted successfully.');
+        } catch (err) {
+            alert('Failed to delete broadcast: ' + (err.response?.data?.message || err.message));
+        }
     };
 
     const handleAction = async (id, status) => {
@@ -323,7 +397,13 @@ const AdminDashboard = () => {
 
     return (
         <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
-            <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} complaintsCount={complaints.filter(c => c.status === 'Pending').length} usersCount={pendingUsers.length} />
+            <Sidebar
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                complaintsCount={complaints.filter(c => c.status === 'Pending').length}
+                usersCount={pendingUsers.length}
+                broadcastsCount={broadcastsList.length}
+            />
 
             {/* Main Content Area */}
             <div className="flex-1 overflow-y-auto relative ml-64">
@@ -332,6 +412,7 @@ const AdminDashboard = () => {
                     <div>
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
                             {activeTab === 'overview' && 'Dashboard Overview'}
+                            {activeTab === 'broadcasts' && 'Campus Broadcast & Announcements'}
                             {activeTab === 'analytics' && 'Analytics & Reports'}
                             {activeTab === 'operations' && 'Campus Operations'}
                             {activeTab === 'users' && 'User Management'}
@@ -425,6 +506,212 @@ const AdminDashboard = () => {
                             </div>
 
                             <ForecasterSection />
+
+                            <ProjectVideoPlayer
+                                title="System Walkthrough & Architecture Tour"
+                                subtitle="Interactive overview of Smart Campus operational modules, AI forecasting, and emergency dispatch."
+                            />
+                        </div>
+                    )}
+
+                    {/* TAB: BROADCAST MANAGEMENT (Full Admin Control) */}
+                    {activeTab === 'broadcasts' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+                            {/* Create New Broadcast Announcement */}
+                            <div className="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 rounded-2xl p-6 text-white shadow-xl border border-indigo-700/40 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 -mt-8 -mr-8 w-48 h-48 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-indigo-500/30 border border-indigo-400/30 flex items-center justify-center text-indigo-300 shadow-inner">
+                                            <Megaphone size={22} className="animate-pulse" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-bold text-white tracking-tight">Create Official Campus Broadcast</h3>
+                                            <p className="text-xs text-indigo-200">Publish instant announcements to students, faculty, or all campus members.</p>
+                                        </div>
+                                    </div>
+                                    <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Sync Enabled
+                                    </span>
+                                </div>
+
+                                <div className="space-y-4 pt-2">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-semibold text-indigo-200 mb-1.5">Target Audience</label>
+                                            <select
+                                                value={message.role}
+                                                onChange={e => setMessage({ ...message, role: e.target.value })}
+                                                className="w-full text-sm font-semibold p-2.5 bg-indigo-950/60 border border-indigo-700/60 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 text-white"
+                                            >
+                                                <option value="All" className="bg-slate-900 text-white">📢 Everyone (Students & Staff)</option>
+                                                <option value="Student" className="bg-slate-900 text-white">🎓 Students Only</option>
+                                                <option value="Staff" className="bg-slate-900 text-white">🛠️ Staff / Employees Only</option>
+                                            </select>
+                                        </div>
+                                        <div className="md:col-span-2">
+                                            <label className="block text-xs font-semibold text-indigo-200 mb-1.5">Announcement Content</label>
+                                            <textarea
+                                                className="w-full text-sm p-3 bg-indigo-950/60 border border-indigo-700/60 rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 text-white placeholder-indigo-300/50 min-h-[90px] resize-y"
+                                                placeholder="Write the official broadcast message here... (e.g. Campus schedule update, holiday notice, emergency alert)"
+                                                value={message.content}
+                                                onChange={e => setMessage({ ...message, content: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-1">
+                                        <p className="text-xs text-indigo-300/80 italic">
+                                            💡 Broadcasts appear immediately on student notifications & feeds without needing a page refresh.
+                                        </p>
+                                        <button
+                                            onClick={sendMessage}
+                                            disabled={broadcastSubmitting || !message.content.trim()}
+                                            className={`px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg transition-all ${
+                                                broadcastSubmitting || !message.content.trim()
+                                                    ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                                                    : 'bg-indigo-500 hover:bg-indigo-400 text-white shadow-indigo-600/30 hover:scale-[1.02] active:scale-[0.98]'
+                                            }`}
+                                        >
+                                            <Send size={16} />
+                                            {broadcastSubmitting ? 'Publishing...' : 'Publish Broadcast'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Search & Filter Bar */}
+                            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+                                <div className="relative w-full md:w-80">
+                                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search broadcasts..."
+                                        value={broadcastSearch}
+                                        onChange={e => setBroadcastSearch(e.target.value)}
+                                        className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-slate-800"
+                                    />
+                                    {broadcastSearch && (
+                                        <button onClick={() => setBroadcastSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                            <X size={14} />
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
+                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Filter Audience:</span>
+                                    {['All', 'Student', 'Staff'].map(f => (
+                                        <button
+                                            key={f}
+                                            onClick={() => setBroadcastFilter(f)}
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                                                broadcastFilter === f
+                                                    ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200'
+                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                            }`}
+                                        >
+                                            {f === 'All' ? '📢 All' : f === 'Student' ? '🎓 Students' : '🛠️ Staff'}
+                                        </button>
+                                    ))}
+                                    <span className="ml-2 text-xs font-bold bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full border border-slate-200">
+                                        Total: {broadcastsList.length}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Broadcasts List */}
+                            <div className="space-y-4">
+                                {(() => {
+                                    const filtered = broadcastsList.filter(b => {
+                                        const matchesFilter = broadcastFilter === 'All' ? true : (b.receiverRole || 'All') === broadcastFilter;
+                                        const q = broadcastSearch.toLowerCase();
+                                        const matchesSearch = !q || (b.content && b.content.toLowerCase().includes(q)) || (b.receiverRole && b.receiverRole.toLowerCase().includes(q));
+                                        return matchesFilter && matchesSearch;
+                                    });
+
+                                    if (filtered.length === 0) {
+                                        return (
+                                            <div className="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-sm">
+                                                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center">
+                                                    <Megaphone size={28} />
+                                                </div>
+                                                <h4 className="text-lg font-bold text-slate-800 mb-1">No Broadcasts Found</h4>
+                                                <p className="text-sm text-slate-500 max-w-md mx-auto">
+                                                    {broadcastSearch || broadcastFilter !== 'All'
+                                                        ? 'No announcements match your search or filter criteria. Try clearing search filters.'
+                                                        : 'No campus broadcast announcements have been published yet. Use the form above to post one!'}
+                                                </p>
+                                            </div>
+                                        );
+                                    }
+
+                                    return (
+                                        <div className="grid grid-cols-1 gap-4">
+                                            {filtered.map(item => {
+                                                const targetRole = item.receiverRole || 'All';
+                                                const badgeColors =
+                                                    targetRole === 'Student' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                                    targetRole === 'Staff' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                                    'bg-purple-50 text-purple-700 border-purple-200';
+
+                                                return (
+                                                    <div
+                                                        key={item._id}
+                                                        className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all group relative"
+                                                    >
+                                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                                                            <div className="flex flex-wrap items-center gap-2">
+                                                                <span className={`text-xs font-bold px-3 py-1 rounded-full border ${badgeColors}`}>
+                                                                    {targetRole === 'Student' && '🎓 Students Only'}
+                                                                    {targetRole === 'Staff' && '🛠️ Staff / Employees Only'}
+                                                                    {targetRole === 'All' && '📢 Campus-Wide (Everyone)'}
+                                                                </span>
+                                                                <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-full flex items-center gap-1">
+                                                                    <ShieldCheck size={13} /> {item.senderRole || 'Admin'}
+                                                                </span>
+                                                                {item.senderId?.name && (
+                                                                    <span className="text-xs text-slate-500 font-medium">
+                                                                        by <strong className="text-slate-700">{item.senderId.name}</strong>
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex items-center gap-3">
+                                                                <span className="text-xs text-slate-400 flex items-center gap-1">
+                                                                    <Clock size={13} /> {new Date(item.createdAt).toLocaleString()}
+                                                                </span>
+                                                                <div className="flex items-center gap-1.5 ml-2">
+                                                                    <button
+                                                                        onClick={() => setEditingBroadcast({ ...item })}
+                                                                        className="p-2 rounded-xl bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 transition-colors flex items-center gap-1 text-xs font-bold"
+                                                                        title="Edit Broadcast Post"
+                                                                    >
+                                                                        <Edit2 size={14} />
+                                                                        <span className="hidden sm:inline">Edit</span>
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleDeleteBroadcast(item._id)}
+                                                                        className="p-2 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 transition-colors flex items-center gap-1 text-xs font-bold"
+                                                                        title="Delete Broadcast Permanently"
+                                                                    >
+                                                                        <Trash2 size={14} />
+                                                                        <span className="hidden sm:inline">Delete</span>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="pt-4">
+                                                            <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap font-medium">
+                                                                {item.content}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
                         </div>
                     )}
 
@@ -709,16 +996,30 @@ const AdminDashboard = () => {
                                 {/* Broadcast */}
                                 <div className="card bg-white h-auto">
                                     <h3 className="text-lg font-bold mb-3 flex items-center text-slate-800">
-                                        <Send className="mr-2 text-indigo-500" size={20} /> Broadcast
+                                        <Send className="mr-2 text-indigo-500" size={20} /> Broadcast Announcement
                                     </h3>
                                     <div className="space-y-3">
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 mb-1">Target Audience</label>
+                                            <select
+                                                value={message.role}
+                                                onChange={e => setMessage({ ...message, role: e.target.value })}
+                                                className="w-full text-xs font-bold p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700"
+                                            >
+                                                <option value="All">📢 Everyone (Students & Staff)</option>
+                                                <option value="Student">🎓 Students Only</option>
+                                                <option value="Staff">🛠️ Staff / Employees Only</option>
+                                            </select>
+                                        </div>
                                         <textarea
                                             className="input-field min-h-[80px]"
-                                            placeholder="Type announcement..."
+                                            placeholder="Type announcement to broadcast..."
                                             value={message.content}
                                             onChange={e => setMessage({ ...message, content: e.target.value })}
                                         />
-                                        <button onClick={sendMessage} className="btn btn-primary w-full py-2">Send Notification</button>
+                                        <button onClick={sendMessage} className="btn btn-primary w-full py-2 flex items-center justify-center gap-2">
+                                            <Send size={16} /> Send Broadcast
+                                        </button>
                                     </div>
                                 </div>
 
@@ -880,6 +1181,75 @@ const AdminDashboard = () => {
                                         </tbody>
                                     </table>
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* EDIT BROADCAST MODAL */}
+                    {editingBroadcast && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 space-y-4 animate-in zoom-in-95 duration-200">
+                                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                                    <div className="flex items-center gap-2 text-indigo-600">
+                                        <div className="p-2 bg-indigo-50 rounded-xl">
+                                            <Edit2 size={18} />
+                                        </div>
+                                        <h3 className="font-bold text-slate-800 text-lg">Edit Campus Broadcast</h3>
+                                    </div>
+                                    <button
+                                        onClick={() => setEditingBroadcast(null)}
+                                        className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+                                    >
+                                        <X size={18} />
+                                    </button>
+                                </div>
+
+                                <form onSubmit={handleUpdateBroadcast} className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                                            Target Audience
+                                        </label>
+                                        <select
+                                            value={editingBroadcast.receiverRole || 'All'}
+                                            onChange={e => setEditingBroadcast({ ...editingBroadcast, receiverRole: e.target.value })}
+                                            className="w-full text-sm font-semibold p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800"
+                                        >
+                                            <option value="All">📢 Everyone (Students & Staff)</option>
+                                            <option value="Student">🎓 Students Only</option>
+                                            <option value="Staff">🛠️ Staff / Employees Only</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                                            Broadcast Message
+                                        </label>
+                                        <textarea
+                                            value={editingBroadcast.content}
+                                            onChange={e => setEditingBroadcast({ ...editingBroadcast, content: e.target.value })}
+                                            rows={5}
+                                            required
+                                            className="w-full text-sm p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 resize-y"
+                                            placeholder="Edit your announcement message..."
+                                        />
+                                    </div>
+
+                                    <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
+                                        <button
+                                            type="button"
+                                            onClick={() => setEditingBroadcast(null)}
+                                            className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            className="px-5 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-200 transition-all flex items-center gap-2"
+                                        >
+                                            <CheckCircle size={16} /> Save Changes
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     )}

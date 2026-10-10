@@ -1,17 +1,23 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { ArrowRight, Globe, Zap, Shield, ChevronRight, BarChart3, Users } from 'lucide-react';
+import ProjectVideoPlayer from '../components/ProjectVideoPlayer';
+import { ArrowRight, Globe, Zap, Shield, ChevronRight, BarChart3, Users, Play, Sparkles } from 'lucide-react';
 
 const Landing = () => {
     const navigate = useNavigate();
+
+    const scrollToDemo = () => {
+        const el = document.getElementById('project-video-section');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+    };
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans selection:bg-emerald-100 selection:text-emerald-900">
             <Navbar />
 
             {/* Hero Section */}
-            <header className="relative pt-20 pb-24 lg:pt-32 lg:pb-40 overflow-hidden">
+            <header className="relative pt-20 pb-16 lg:pt-32 lg:pb-24 overflow-hidden">
                 <div className="page-container relative z-10 text-center">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm mb-8 animate-enter">
                         <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -27,7 +33,7 @@ const Landing = () => {
                         Streamline operations, enhance sustainability, and empower your university community with a role-based, unified campus dashboard experience.
                     </p>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto animate-enter" style={{ animationDelay: '0.3s' }}>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-xl mx-auto animate-enter" style={{ animationDelay: '0.3s' }}>
                         {/* Button 1: Smart Campus Main */}
                         <button
                             onClick={() => navigate('/signup')}
@@ -37,7 +43,18 @@ const Landing = () => {
                             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                         </button>
 
-                        {/* Button 2: Live Demo / Login */}
+                        {/* Button 2: Watch Project Video */}
+                        <button
+                            onClick={scrollToDemo}
+                            className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-white text-slate-800 font-bold hover:bg-slate-50 hover:text-emerald-600 active:scale-95 transition-all flex items-center justify-center gap-2 border border-slate-200 shadow-sm group"
+                        >
+                            <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                                <Play size={12} className="ml-0.5" />
+                            </div>
+                            <span>Watch Project Video</span>
+                        </button>
+
+                        {/* Button 3: Live Demo / Login */}
                         <button
                             onClick={() => navigate('/login')}
                             className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-slate-800/90 text-slate-100 font-bold hover:bg-slate-700 active:scale-95 transition-all flex items-center justify-center gap-2 border border-slate-700/80 shadow-md group"
@@ -54,6 +71,30 @@ const Landing = () => {
                     <div className="absolute top-40 -left-20 w-[600px] h-[600px] bg-blue-50/50 rounded-full blur-3xl opacity-60"></div>
                 </div>
             </header>
+
+            {/* Project Video & Live Demo Showcase Section */}
+            <section id="project-video-section" className="py-16 bg-gradient-to-b from-slate-50 via-slate-900 to-slate-950 text-white relative">
+                <div className="page-container max-w-5xl">
+                    <div className="text-center mb-10">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-3">
+                            <Sparkles size={14} className="animate-pulse" />
+                            <span>Experience The System In Action</span>
+                        </div>
+                        <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight mb-3">
+                            Watch Smart Campus Walkthrough
+                        </h2>
+                        <p className="text-slate-400 text-sm md:text-base max-w-xl mx-auto">
+                            Take an interactive video tour demonstrating automated resource forecasting, IoT incident reports, real-time broadcasts, and student safety response.
+                        </p>
+                    </div>
+
+                    {/* Reusable Video Player */}
+                    <ProjectVideoPlayer
+                        title="Smart Campus - Full Video Presentation"
+                        subtitle="Detailed walkthrough and system demonstration by DEEPAK JAT"
+                    />
+                </div>
+            </section>
 
             {/* Features Grid */}
             <section className="py-24 bg-white border-y border-slate-100">

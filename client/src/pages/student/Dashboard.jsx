@@ -3,16 +3,18 @@ import API from '../../services/api';
 import ChatbotWidget from '../../components/ChatbotWidget';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import socket from '../../services/socket';
 import {
     LayoutDashboard, FileText, BookOpen, Calendar, Settings, LogOut,
     Menu, Bell, User, ChevronRight, Camera, XCircle, CheckCircle,
     Clock, Plus, Flame, Trophy, AlertTriangle, MapPin, Search,
-    MessageSquare, Users
+    MessageSquare, Users, Megaphone, Radio, ShieldCheck, Tag
 } from 'lucide-react';
 import StudentEvents from './StudentEvents';
 import StudentLibrary from './StudentLibrary';
 import SocialFeed from './SocialFeed';
 import ChatApp from './ChatApp';
+import ProjectVideoPlayer from '../../components/ProjectVideoPlayer';
 
 const StudentDashboard = () => {
     const { user, handleLogout } = useAuth();
@@ -21,6 +23,9 @@ const StudentDashboard = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [complaints, setComplaints] = useState([]);
     const [library, setLibrary] = useState({ totalSeats: 100, occupiedSeats: 0 });
+    const [broadcasts, setBroadcasts] = useState([]);
+    const [broadcastSearch, setBroadcastSearch] = useState('');
+    const [broadcastFilter, setBroadcastFilter] = useState('All');
 
     // Form State
     const [showForm, setShowForm] = useState(false);
@@ -29,18 +34,52 @@ const StudentDashboard = () => {
 
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchLibrary, 5000);
-        return () => clearInterval(interval);
+        const interval = setInterval(() => {
+            fetchLibrary();
+            fetchBroadcasts();
+        }, 15000);
+
+        const handleNewBroadcast = (newMsg) => {
+            setBroadcasts(prev => [newMsg, ...prev.filter(m => m._id !== newMsg._id)]);
+        };
+
+        const handleUpdateBroadcast = (updatedMsg) => {
+            setBroadcasts(prev => prev.map(m => m._id === updatedMsg._id ? updatedMsg : m));
+        };
+
+        const handleDeleteBroadcast = ({ id }) => {
+            setBroadcasts(prev => prev.filter(m => m._id !== id));
+        };
+
+        socket.on('new-broadcast', handleNewBroadcast);
+        socket.on('update-broadcast', handleUpdateBroadcast);
+        socket.on('delete-broadcast', handleDeleteBroadcast);
+
+        return () => {
+            clearInterval(interval);
+            socket.off('new-broadcast', handleNewBroadcast);
+            socket.off('update-broadcast', handleUpdateBroadcast);
+            socket.off('delete-broadcast', handleDeleteBroadcast);
+        };
     }, []);
 
     const fetchData = async () => {
         try {
-            const [compRes, libRes] = await Promise.all([
+            const [compRes, libRes, msgRes] = await Promise.all([
                 API.get('/complaints'),
-                API.get('/library')
+                API.get('/library'),
+                API.get('/messages')
             ]);
-            setComplaints(compRes.data);
-            setLibrary(libRes.data);
+            setComplaints(compRes.data || []);
+            setLibrary(libRes.data || { totalSeats: 100, occupiedSeats: 0 });
+            setBroadcasts(msgRes.data || []);
+        } catch (err) { console.error(err); }
+    };
+
+    const fetchBroadcasts = async () => {
+        try {
+            const { data } = await API.get('/messages');
+            setBroadcasts(data || []);
         } catch (err) { console.error(err); }
     };
 
@@ -58,16 +97,23 @@ const StudentDashboard = () => {
 
     // --- Components ---
 
-    const SidebarItem = ({ id, label, icon: Icon }) => (
+    const SidebarItem = ({ id, label, icon: Icon, count }) => (
         <button
             onClick={() => setActiveTab(id)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${activeTab === id
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all font-medium ${activeTab === id
                 ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
                 : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
                 }`}
         >
-            <Icon size={20} />
-            <span className={`${!isSidebarOpen && 'hidden md:hidden lg:inline'}`}>{label}</span>
+            <div className="flex items-center gap-3">
+                <Icon size={20} />
+                <span className={`${!isSidebarOpen && 'hidden md:hidden lg:inline'}`}>{label}</span>
+            </div>
+            {count > 0 && (
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${activeTab === id ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-700'}`}>
+                    {count}
+                </span>
+            )}
         </button>
     );
 
@@ -118,6 +164,13 @@ const StudentDashboard = () => {
         } catch (err) { alert('Alarm Failed'); }
     };
 
+    const filteredBroadcasts = broadcasts.filter(b => {
+        const matchesText = b.content?.toLowerCase().includes(broadcastSearch.toLowerCase()) ||
+            b.senderId?.name?.toLowerCase().includes(broadcastSearch.toLowerCase());
+        const matchesRole = broadcastFilter === 'All' || b.receiverRole === broadcastFilter || (b.receiverRole === 'All');
+        return matchesText && matchesRole;
+    });
+
     return (
         <div className="min-h-screen bg-slate-50 flex font-sans relative overflow-x-hidden">
             {/* Mobile Backdrop */}
@@ -147,11 +200,12 @@ const StudentDashboard = () => {
                 <div className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
                     <div className="text-xs font-bold text-slate-400 uppercase px-4 mb-2">Menu</div>
                     <SidebarItem id="home" label="Home" icon={LayoutDashboard} />
+                    <SidebarItem id="broadcast" label="Broadcasts" icon={Megaphone} count={broadcasts.length} />
+                    <SidebarItem id="chat" label="Chat / Messenger" icon={MessageSquare} />
                     <SidebarItem id="complaints" label="My Complaints" icon={FileText} />
                     <SidebarItem id="library" label="Library" icon={BookOpen} />
                     <SidebarItem id="events" label="Events" icon={Calendar} />
                     <SidebarItem id="social" label="Campus Social" icon={Users} />
-                    <SidebarItem id="chat" label="Chat" icon={MessageSquare} />
 
                     <div className="mt-8 text-xs font-bold text-slate-400 uppercase px-4 mb-2">Account</div>
                     <SidebarItem id="profile" label="Profile" icon={User} />
@@ -178,19 +232,23 @@ const StudentDashboard = () => {
                         >
                             <Menu size={20} />
                         </button>
-                        <h1 className="text-xl font-bold text-slate-800 capitalize">{activeTab.replace('-', ' ')}</h1>
+                        <h1 className="text-xl font-bold text-slate-800 capitalize">
+                            {activeTab === 'broadcast' ? 'Campus Broadcasts & Announcements' : activeTab.replace('-', ' ')}
+                        </h1>
                     </div>
 
                     <div className="flex items-center gap-4 md:gap-6">
-                        {/* Search Bar (Hidden on Mobile) */}
-                        <div className="hidden md:flex items-center bg-slate-100 rounded-full px-4 py-2 w-64 border border-transparent focus-within:border-indigo-300 focus-within:bg-white transition-all">
-                            <Search size={16} className="text-slate-400 mr-2" />
-                            <input type="text" placeholder="Search..." className="bg-transparent text-sm w-full outline-none text-slate-700 placeholder:text-slate-400" />
-                        </div>
-
-                        <button className="relative p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors">
+                        <button 
+                            onClick={() => setActiveTab('broadcast')}
+                            className="relative p-2.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors border border-slate-100 shadow-2xs"
+                            title="View Broadcasts"
+                        >
                             <Bell size={20} />
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
+                            {broadcasts.length > 0 && (
+                                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center px-1 ring-2 ring-white animate-pulse">
+                                    {broadcasts.length}
+                                </span>
+                            )}
                         </button>
 
                         <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
@@ -216,11 +274,49 @@ const StudentDashboard = () => {
                                 <div className="relative z-10 max-w-2xl">
                                     <h2 className="text-3xl font-bold mb-2">Hello, {user?.name}! 👋</h2>
                                     <p className="text-indigo-100 mb-6 text-lg">Your campus dashboard is ready. You have <span className="font-bold text-white underline decoration-wavy underline-offset-4">{complaints.filter(c => c.status !== 'Resolved').length} active</span> tasks requiring attention.</p>
-                                    <button onClick={() => setShowForm(true)} className="bg-white text-indigo-600 px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center gap-2">
-                                        <Plus size={20} /> Raise Complaint
-                                    </button>
+                                    <div className="flex flex-wrap gap-3">
+                                        <button onClick={() => setShowForm(true)} className="bg-white text-indigo-600 px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center gap-2">
+                                            <Plus size={20} /> Raise Complaint
+                                        </button>
+                                        <button onClick={() => setActiveTab('chat')} className="bg-indigo-700/60 text-white px-5 py-3 rounded-xl font-bold border border-indigo-400/40 hover:bg-indigo-700 transition-all flex items-center gap-2">
+                                            <MessageSquare size={18} /> Open Campus Chat
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
+
+                            {/* Live Campus Announcements / Broadcast Banner */}
+                            {broadcasts.length > 0 && (
+                                <div className="bg-gradient-to-r from-indigo-50/90 via-purple-50/80 to-pink-50/80 border border-indigo-100/80 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                                    <div className="flex items-start gap-4 min-w-0">
+                                        <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-200">
+                                            <Megaphone size={22} className="animate-pulse" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                                <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 bg-indigo-600 text-white rounded-md">
+                                                    Official Announcement
+                                                </span>
+                                                <span className="text-xs text-slate-400 font-medium">
+                                                    {new Date(broadcasts[0].date || broadcasts[0].createdAt || Date.now()).toLocaleDateString()}
+                                                </span>
+                                                <span className="text-[10px] font-bold text-indigo-700 bg-white border border-indigo-200 px-2 py-0.5 rounded-full">
+                                                    By {broadcasts[0].senderId?.name || 'Administration'}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm font-bold text-slate-800 line-clamp-2 leading-relaxed">
+                                                {broadcasts[0].content}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={() => setActiveTab('broadcast')}
+                                        className="text-xs font-bold text-indigo-600 bg-white border border-indigo-200 px-4 py-2.5 rounded-xl hover:bg-indigo-50 transition-colors shadow-xs shrink-0 flex items-center gap-1.5"
+                                    >
+                                        View All ({broadcasts.length}) <ChevronRight size={14} />
+                                    </button>
+                                </div>
+                            )}
 
                             {/* Stats Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -285,7 +381,7 @@ const StudentDashboard = () => {
                                     {(() => {
                                         const totSeats = Array.isArray(library) 
                                             ? library.reduce((acc, l) => acc + (l.totalSeats || 0), 0) || 12 
-                                            : (library?.totalSeats || 100);
+                                             : (library?.totalSeats || 100);
                                         const occSeats = Array.isArray(library) 
                                             ? library.reduce((acc, l) => acc + (l.bookedSeats || l.occupiedSeats || 0), 0) 
                                             : (library?.occupiedSeats || 0);
@@ -317,6 +413,105 @@ const StudentDashboard = () => {
                                     </button>
                                 </div>
                             </div>
+
+                            {/* Project Video Showcase */}
+                            <ProjectVideoPlayer
+                                title="Campus Walkthrough & Features Guide"
+                                subtitle="Watch the full system demo explaining student features, library bookings, incident reporting, and real-time alerts."
+                            />
+                        </div>
+                    )}
+
+                    {/* Broadcast / Announcements Tab */}
+                    {activeTab === 'broadcast' && (
+                        <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-md shadow-indigo-200">
+                                        <Megaphone size={24} />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold text-slate-900">Campus Broadcasts & Notices</h2>
+                                        <p className="text-xs text-slate-500">Official circulars, urgent announcements, and updates from Campus Administration.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                                        <input
+                                            type="text"
+                                            placeholder="Search announcements..."
+                                            value={broadcastSearch}
+                                            onChange={e => setBroadcastSearch(e.target.value)}
+                                            className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500 w-56 text-slate-700"
+                                        />
+                                    </div>
+                                    <button 
+                                        onClick={fetchBroadcasts} 
+                                        className="px-3.5 py-2 bg-indigo-50 text-indigo-600 rounded-xl font-bold text-xs hover:bg-indigo-100 transition-colors"
+                                    >
+                                        Refresh
+                                    </button>
+                                </div>
+                            </div>
+
+                            {filteredBroadcasts.length === 0 ? (
+                                <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-slate-200 space-y-3">
+                                    <div className="w-16 h-16 bg-indigo-50 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto">
+                                        <Megaphone size={32} />
+                                    </div>
+                                    <h3 className="text-base font-bold text-slate-700">No broadcasts found</h3>
+                                    <p className="text-xs text-slate-400 max-w-sm mx-auto">There are currently no active public announcements broadcasted to students.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {filteredBroadcasts.map((b, idx) => (
+                                        <div key={b._id || idx} className="bg-white p-6 rounded-3xl border border-slate-200 hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between">
+                                            <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50/50 rounded-full blur-2xl -mr-6 -mt-6"></div>
+                                            <div>
+                                                <div className="flex items-center justify-between gap-2 mb-3">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                                                            {b.senderId?.name?.charAt(0) || 'A'}
+                                                        </span>
+                                                        <div>
+                                                            <div className="text-xs font-bold text-slate-800 flex items-center gap-1">
+                                                                {b.senderId?.name || 'Administrator'}
+                                                                <ShieldCheck size={14} className="text-indigo-600" />
+                                                            </div>
+                                                            <div className="text-[10px] text-slate-400 capitalize">{b.senderId?.role || 'Admin'}</div>
+                                                        </div>
+                                                    </div>
+                                                    <span className="text-[10px] font-bold px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg border border-indigo-100 flex items-center gap-1">
+                                                        <Radio size={10} className="text-indigo-600 animate-pulse" />
+                                                        {b.receiverRole === 'All' ? 'Broadcast: Everyone' : `Audience: ${b.receiverRole}`}
+                                                    </span>
+                                                </div>
+
+                                                <p className="text-slate-800 text-sm font-medium leading-relaxed my-3 whitespace-pre-wrap">
+                                                    {b.content}
+                                                </p>
+                                            </div>
+
+                                            <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-[11px] text-slate-400">
+                                                <span className="flex items-center gap-1 font-medium">
+                                                    <Clock size={12} />
+                                                    {new Date(b.date || b.createdAt || Date.now()).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                                                </span>
+                                                <span className="text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded flex items-center gap-1 text-[10px]">
+                                                    <CheckCircle size={10} /> Verified Notice
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'chat' && (
+                        <div className="animate-in fade-in zoom-in-95 duration-300">
+                            <ChatApp isEmbedded={true} />
                         </div>
                     )}
 
@@ -353,8 +548,6 @@ const StudentDashboard = () => {
                         </div>
                     )}
 
-
-
                     {activeTab === 'library' && (
                         <div className="animate-in fade-in zoom-in-95 duration-300">
                             <StudentLibrary isEmbedded={true} />
@@ -370,12 +563,6 @@ const StudentDashboard = () => {
                     {activeTab === 'social' && (
                         <div className="animate-in fade-in zoom-in-95 duration-300 h-[calc(100vh-120px)]">
                             <SocialFeed isEmbedded={true} />
-                        </div>
-                    )}
-
-                    {activeTab === 'chat' && (
-                        <div className="animate-in fade-in zoom-in-95 duration-300 h-[calc(100vh-120px)]">
-                            <ChatApp isEmbedded={true} />
                         </div>
                     )}
 
