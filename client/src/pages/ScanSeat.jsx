@@ -9,6 +9,7 @@ import {
     Layers, RefreshCw, Smartphone, Camera, ChevronRight
 } from 'lucide-react';
 import CameraQrScannerModal from '../components/CameraQrScannerModal';
+import ThemeToggle from '../components/ui/ThemeToggle';
 
 const ScanSeat = () => {
     const [searchParams] = useSearchParams();
@@ -138,11 +139,12 @@ const ScanSeat = () => {
                     </div>
                 </Link>
 
-                <div>
+                <div className="flex items-center gap-3">
+                    <ThemeToggle />
                     {user ? (
                         <Link 
                             to={user.role === 'Admin' ? '/admin/library' : '/student/library'}
-                            className="text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-all"
+                            className="text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer"
                         >
                             <span>Dashboard</span>
                             <ChevronRight size={14} />
@@ -150,7 +152,7 @@ const ScanSeat = () => {
                     ) : (
                         <Link 
                             to="/login"
-                            className="text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all"
+                            className="text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
                         >
                             <LogIn size={14} />
                             <span>Sign In</span>

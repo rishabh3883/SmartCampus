@@ -15,6 +15,8 @@ import StudentLibrary from './StudentLibrary';
 import SocialFeed from './SocialFeed';
 import ChatApp from './ChatApp';
 import ProjectVideoPlayer from '../../components/ProjectVideoPlayer';
+import ThemeToggle from '../../components/ui/ThemeToggle';
+import { RoleBadge } from '../../components/ui/Badge';
 
 const StudentDashboard = () => {
     const { user, handleLogout } = useAuth();
@@ -182,18 +184,16 @@ const StudentDashboard = () => {
             )}
 
             {/* Sidebar */}
-            <aside className={`bg-white border-r border-slate-200 fixed lg:static inset-y-0 left-0 z-40 w-64 shrink-0 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} transition-transform duration-300 flex flex-col shadow-xl lg:shadow-none`}>
-                <div className="h-20 flex items-center px-6 border-b border-slate-100 gap-3">
-                    <div className="w-9 h-9 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-indigo-500/20 shrink-0">
+            <aside className={`bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 fixed lg:static inset-y-0 left-0 z-40 w-64 shrink-0 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} transition-transform duration-300 flex flex-col shadow-xl lg:shadow-none`}>
+                <div className="h-20 flex items-center px-6 border-b border-slate-100 dark:border-slate-800 gap-3">
+                    <div className="w-9 h-9 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-blue-500/20 shrink-0">
                         S
                     </div>
                     <div className="flex flex-col min-w-0">
-                        <span className="text-base font-black text-slate-900 leading-tight truncate">
-                            Campus<span className="text-indigo-600">Hub</span>
+                        <span className="text-base font-black text-slate-900 dark:text-white leading-tight truncate">
+                            Smart<span className="text-emerald-500">Campus</span>
                         </span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                            Student Portal
-                        </span>
+                        <div className="mt-0.5"><RoleBadge role="Student" /></div>
                     </div>
                 </div>
 
@@ -212,8 +212,8 @@ const StudentDashboard = () => {
                     <SidebarItem id="settings" label="Settings" icon={Settings} />
                 </div>
 
-                <div className="p-4 border-t border-slate-100">
-                    <button onClick={handleLogoutClick} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-600 hover:bg-rose-50 font-medium transition-colors">
+                <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+                    <button onClick={handleLogoutClick} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 font-medium transition-colors cursor-pointer">
                         <LogOut size={20} />
                         <span>Logout</span>
                     </button>
@@ -221,26 +221,27 @@ const StudentDashboard = () => {
             </aside>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
+            <div className="flex-1 flex flex-col min-w-0 transition-all duration-300 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
                 {/* Topbar */}
-                <header className="h-20 bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-20 px-4 md:px-8 flex items-center justify-between">
+                <header className="h-20 bg-white/95 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-20 px-4 md:px-8 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <button 
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-                            className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl border border-slate-200"
+                            className="lg:hidden p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer"
                             title="Toggle Menu"
                         >
                             <Menu size={20} />
                         </button>
-                        <h1 className="text-xl font-bold text-slate-800 capitalize">
+                        <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 capitalize">
                             {activeTab === 'broadcast' ? 'Campus Broadcasts & Announcements' : activeTab.replace('-', ' ')}
                         </h1>
                     </div>
 
-                    <div className="flex items-center gap-4 md:gap-6">
+                    <div className="flex items-center gap-3 md:gap-5">
+                        <ThemeToggle />
                         <button 
                             onClick={() => setActiveTab('broadcast')}
-                            className="relative p-2.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors border border-slate-100 shadow-2xs"
+                            className="relative p-2.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-colors border border-slate-200 dark:border-slate-700 shadow-2xs cursor-pointer"
                             title="View Broadcasts"
                         >
                             <Bell size={20} />
@@ -251,13 +252,13 @@ const StudentDashboard = () => {
                             )}
                         </button>
 
-                        <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
+                        <div className="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-700">
                             <div className="text-right hidden md:block">
-                                <div className="text-sm font-bold text-slate-800">{user?.name}</div>
-                                <div className="text-xs text-slate-500">{user?.role}</div>
+                                <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{user?.name}</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400">{user?.role}</div>
                             </div>
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white">
-                                {user?.name?.charAt(0)}
+                            <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 flex items-center justify-center font-bold text-sm shadow-xs">
+                                {user?.name?.charAt(0) || 'S'}
                             </div>
                         </div>
                     </div>

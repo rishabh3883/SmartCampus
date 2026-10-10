@@ -1,9 +1,12 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import ErrorBoundary from './components/ui/ErrorBoundary';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Landing from './pages/Landing';
+import NotFound from './pages/NotFound';
 import StudentDashboard from './pages/student/Dashboard';
 import AdminDashboard from './pages/admin/Dashboard';
 import EmployeeDashboard from './pages/employee/Dashboard';
@@ -30,55 +33,57 @@ import ScanSeat from './pages/ScanSeat';
 
 function App() {
   return (
-    <AuthProvider>
-      <EmergencyModal />
-      <Router>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/scan-seat" element={<ScanSeat />} />
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AuthProvider>
+          <EmergencyModal />
+          <Router>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Landing />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/scan-seat" element={<ScanSeat />} />
 
+              {/* Student Routes */}
+              <Route element={<ProtectedRoute roles={['Student']} />}>
+                <Route path="/student" element={<StudentDashboard />} />
+                <Route path="/student/events" element={<StudentEvents />} />
+                <Route path="/student/library" element={<StudentLibrary />} />
+                <Route path="/student/social" element={<SocialFeed />} />
+                <Route path="/student/chat" element={<ChatApp />} />
+              </Route>
 
+              {/* Admin Routes */}
+              <Route element={<ProtectedRoute roles={['Admin', 'Employee']} />}>
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/events" element={<AdminEvents />} />
+                <Route path="/admin/library" element={<AdminLibrary />} />
+                <Route path="/admin/reports" element={<AdminReports />} />
+                <Route path="/admin/environment" element={<AdminEnvironment />} />
+                <Route path="/admin/timetable" element={<AdminTimetable />} />
+                <Route path="/admin/social-moderation" element={<AdminModeration />} />
+                <Route path="/admin/attendance-reports" element={<SectionAttendanceReports />} />
+              </Route>
 
-          {/* Student Routes */}
-          <Route element={<ProtectedRoute roles={['Student']} />}>
-            <Route path="/student" element={<StudentDashboard />} />
-            <Route path="/student/events" element={<StudentEvents />} />
-            <Route path="/student/library" element={<StudentLibrary />} />
-            <Route path="/student/social" element={<SocialFeed />} />
-            <Route path="/student/chat" element={<ChatApp />} />
-          </Route>
+              {/* Employee Routes */}
+              <Route element={<ProtectedRoute roles={['Employee', 'Admin']} />}>
+                <Route path="/employee" element={<EmployeeDashboard />} />
+                <Route path="/employee/infra-news" element={<InfraNews />} />
+              </Route>
 
-          {/* Admin Routes */}
-          <Route element={<ProtectedRoute roles={['Admin', 'Employee']} />}>
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/events" element={<AdminEvents />} />
-            <Route path="/admin/library" element={<AdminLibrary />} />
-            <Route path="/admin/reports" element={<AdminReports />} />
-            <Route path="/admin/environment" element={<AdminEnvironment />} />
-            <Route path="/admin/timetable" element={<AdminTimetable />} />
-            <Route path="/admin/social-moderation" element={<AdminModeration />} />
-            <Route path="/admin/attendance-reports" element={<SectionAttendanceReports />} />
-          </Route>
+              {/* Security Routes */}
+              <Route element={<ProtectedRoute roles={['Security', 'Admin']} />}>
+                <Route path="/security" element={<SecurityDashboard />} />
+              </Route>
 
-          {/* Employee Routes */}
-          <Route element={<ProtectedRoute roles={['Employee', 'Admin']} />}>
-            <Route path="/employee" element={<EmployeeDashboard />} />
-            <Route path="/employee/infra-news" element={<InfraNews />} />
-          </Route>
-
-          {/* Security Routes */}
-          <Route element={<ProtectedRoute roles={['Security', 'Admin']} />}>
-            <Route path="/security" element={<SecurityDashboard />} />
-          </Route>
-
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+              {/* Fallback */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Router>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

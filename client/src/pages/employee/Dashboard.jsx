@@ -29,8 +29,11 @@ import {
     Users,
     GraduationCap,
     ChefHat,
-    HeartHandshake
+    HeartHandshake,
+    Sparkles
 } from 'lucide-react';
+import ThemeToggle from '../../components/ui/ThemeToggle';
+import { RoleBadge } from '../../components/ui/Badge';
 
 // --- Sub-Components ---
 
@@ -130,14 +133,19 @@ const EmployeeDashboard = () => {
     return (
         <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
             {/* Sidebar */}
-            <div className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-200 transition-all duration-300 flex flex-col ${sidebarOpen ? 'w-64' : 'w-20'}`}>
+            <div className={`fixed inset-y-0 left-0 z-50 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-all duration-300 flex flex-col ${sidebarOpen ? 'w-64' : 'w-20'}`}>
                 {/* Logo Area */}
-                <div className="h-16 flex items-center justify-center border-b border-slate-100">
-                    <div className="flex items-center gap-2 font-bold text-xl text-indigo-600">
-                        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">
-                            <Zap size={20} fill="currentColor" />
+                <div className="h-16 flex items-center justify-center border-b border-slate-100 dark:border-slate-800 px-4">
+                    <div className="flex items-center gap-2 font-black text-lg text-slate-900 dark:text-white">
+                        <div className="w-8 h-8 bg-gradient-to-tr from-amber-500 to-amber-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-amber-500/20 shrink-0">
+                            <Sparkles size={18} />
                         </div>
-                        {sidebarOpen && <span className="tracking-tight text-slate-900">Staff<span className="text-indigo-600">Portal</span></span>}
+                        {sidebarOpen && (
+                            <div className="flex flex-col min-w-0">
+                                <span className="tracking-tight text-slate-900 dark:text-white leading-tight">Smart<span className="text-emerald-500">Campus</span></span>
+                                <div className="mt-0.5"><RoleBadge role="Employee" /></div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -151,8 +159,8 @@ const EmployeeDashboard = () => {
                 </div>
 
                 {/* Profile & Logout */}
-                <div className="border-t border-slate-100 p-4">
-                    <button onClick={handleLogout} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-600 hover:bg-rose-50 transition-colors ${!sidebarOpen ? 'justify-center' : ''}`}>
+                <div className="border-t border-slate-100 dark:border-slate-800 p-4">
+                    <button onClick={handleLogout} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer ${!sidebarOpen ? 'justify-center' : ''}`}>
                         <LogOut size={20} />
                         {sidebarOpen && <span className="font-medium text-sm">Sign Out</span>}
                     </button>
@@ -162,13 +170,13 @@ const EmployeeDashboard = () => {
             {/* Main Content */}
             <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
                 {/* Topbar */}
-                <header className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 flex items-center justify-between px-6">
+                <header className="h-16 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 flex items-center justify-between px-6">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500">
+                        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 cursor-pointer">
                             <Menu size={20} />
                         </button>
-                        <h2 className="font-bold text-slate-800 text-lg hidden md:block">
-                            {activeTab === 'overview' ? 'Dashboard Overview' :
+                        <h2 className="font-bold text-slate-800 dark:text-slate-100 text-lg hidden md:block">
+                            {activeTab === 'overview' ? 'Staff Operations Dashboard' :
                                 activeTab === 'logging' ? 'Daily Resource Log' :
                                     activeTab === 'food' ? 'Food Safety & Donation' :
                                         activeTab === 'history' ? 'Submission History' : 'Campus InfraNews'}
@@ -176,17 +184,18 @@ const EmployeeDashboard = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="hidden md:flex items-center bg-slate-100 rounded-lg px-3 py-1.5 border border-slate-200 focus-within:ring-2 ring-indigo-100 transition-all w-64">
+                        <ThemeToggle />
+                        <div className="hidden md:flex items-center bg-slate-100 dark:bg-slate-900 rounded-lg px-3 py-1.5 border border-slate-200 dark:border-slate-800 focus-within:ring-2 ring-indigo-100 transition-all w-64">
                             <Search size={16} className="text-slate-400 mr-2" />
-                            <input type="text" placeholder="Search..." className="bg-transparent text-sm w-full outline-none text-slate-700 placeholder:text-slate-400" />
+                            <input type="text" placeholder="Search..." className="bg-transparent text-sm w-full outline-none text-slate-700 dark:text-slate-200 placeholder:text-slate-400" />
                         </div>
-                        <div className="h-8 w-px bg-slate-200 mx-2 hidden md:block"></div>
+                        <div className="h-8 w-px bg-slate-200 dark:bg-slate-800 mx-1 hidden md:block"></div>
                         <div className="flex items-center gap-3 pl-2">
                             <div className="text-right hidden md:block">
-                                <div className="text-sm font-bold text-slate-800">{user?.name || 'Staff Member'}</div>
-                                <div className="text-xs text-slate-500 font-medium">{user?.role || 'Employee'}</div>
+                                <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{user?.name || 'Staff Member'}</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Facility Operations</div>
                             </div>
-                            <div className="w-10 h-10 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-700 font-bold shadow-sm">
+                            <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-700 dark:text-amber-300 font-bold shadow-sm">
                                 {user?.name?.charAt(0) || 'S'}
                             </div>
                         </div>

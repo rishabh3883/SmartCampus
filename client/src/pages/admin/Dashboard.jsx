@@ -12,6 +12,8 @@ import {
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import InsightsWidget from '../../components/InsightsWidget';
 import ProjectVideoPlayer from '../../components/ProjectVideoPlayer';
+import ThemeToggle from '../../components/ui/ThemeToggle';
+import { RoleBadge } from '../../components/ui/Badge';
 import { useNavigate, Link } from 'react-router-dom';
 
 const Sidebar = ({ activeTab, setActiveTab, complaintsCount, usersCount, broadcastsCount }) => {
@@ -406,28 +408,25 @@ const AdminDashboard = () => {
             />
 
             {/* Main Content Area */}
-            <div className="flex-1 overflow-y-auto relative ml-64">
+            <div className="flex-1 overflow-y-auto relative ml-64 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
                 {/* Header */}
-                <div className="bg-white/80 backdrop-blur-md sticky top-0 z-30 border-b border-slate-200 px-8 py-4 flex justify-between items-center">
+                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30 border-b border-slate-200 dark:border-slate-800 px-8 py-4 flex justify-between items-center">
                     <div>
-                        <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
-                            {activeTab === 'overview' && 'Dashboard Overview'}
+                        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">
+                            {activeTab === 'overview' && 'Executive Overview'}
                             {activeTab === 'broadcasts' && 'Campus Broadcast & Announcements'}
                             {activeTab === 'analytics' && 'Analytics & Reports'}
                             {activeTab === 'operations' && 'Campus Operations'}
                             {activeTab === 'users' && 'User Management'}
                         </h2>
-                        <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100">
-                            <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
-                            <span className="text-xs font-bold text-indigo-700">Live Monitoring</span>
+                    <div className="flex items-center gap-3">
+                        <ThemeToggle />
+                        <div className="flex items-center gap-2 bg-purple-50 dark:bg-purple-950/60 px-3 py-1.5 rounded-full border border-purple-200 dark:border-purple-800">
+                            <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
+                            <span className="text-xs font-bold text-purple-700 dark:text-purple-300">Live Telemetry</span>
                         </div>
-                        <button className="p-2 text-slate-400 hover:text-indigo-600 transition-colors relative">
-                            <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full border border-white"></span>
-                            <Activity size={20} />
-                        </button>
                     </div>
                 </div>
 

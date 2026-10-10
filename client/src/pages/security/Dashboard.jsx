@@ -114,7 +114,7 @@ const SecurityDashboard = () => {
     };
 
     return (
-        <div className="min-h-screen pb-12 bg-slate-50 font-sans">
+        <div className="min-h-screen pb-12 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-200">
             <Navbar />
 
             <div className="page-container max-w-5xl mx-auto px-4 py-8">
