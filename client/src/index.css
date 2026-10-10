@@ -11,6 +11,7 @@
 @import "tailwindcss";
 
 @theme {
+  /* --- Figma Terracotta Core Scale (#E2725B / #C75B3C) --- */
   --color-terracotta-50: #fdf7f4;
   --color-terracotta-100: #faede5;
   --color-terracotta-200: #f5dacb;
@@ -23,17 +24,41 @@
   --color-terracotta-900: #6f301e;
   --color-terracotta-950: #3c160b;
 
-  --color-clay-50: #faf7f4;
-  --color-clay-100: #f3ebe3;
-  --color-clay-200: #e6d5c6;
-  --color-clay-300: #d4b8a2;
-  --color-clay-400: #be977c;
-  --color-clay-500: #a97c5e;
-  --color-clay-600: #93664a;
-  --color-clay-700: #77503b;
-  --color-clay-800: #624333;
-  --color-clay-900: #51382b;
-  --color-clay-950: #2c1c15;
+  /* Global Slate mapping to Warm Sunbaked Terracotta Stone & Earth Obsidian */
+  --color-slate-50: #faf4ef;
+  --color-slate-100: #f4eae1;
+  --color-slate-200: #ebd9cc;
+  --color-slate-300: #d8c2b3;
+  --color-slate-400: #b59b8c;
+  --color-slate-500: #917565;
+  --color-slate-600: #6e5445;
+  --color-slate-700: #4e382c;
+  --color-slate-800: #291a13;
+  --color-slate-900: #1b120d;
+  --color-slate-950: #120b08;
+
+  /* Global Indigo & Violet mapped to Figma Terracotta so all existing dashboards turn Terracotta */
+  --color-indigo-50: #fdf7f4;
+  --color-indigo-100: #faede5;
+  --color-indigo-200: #f5dacb;
+  --color-indigo-300: #ecc0ab;
+  --color-indigo-400: #e29b7f;
+  --color-indigo-500: #e2725b;
+  --color-indigo-600: #c75b3c;
+  --color-indigo-700: #a8482b;
+  --color-indigo-800: #883a23;
+  --color-indigo-900: #6f301e;
+  --color-indigo-950: #3c160b;
+
+  --color-violet-500: #e2725b;
+  --color-violet-600: #c75b3c;
+  --color-violet-700: #a8482b;
+  --color-violet-900: #6f301e;
+
+  --color-purple-500: #e2725b;
+  --color-purple-600: #c75b3c;
+  --color-purple-700: #a8482b;
+  --color-purple-900: #6f301e;
 }
 
 /* --- SmartCampus Figma Terracotta Design System Tokens --- */
@@ -43,7 +68,7 @@
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* Figma Terracotta Brand Palette (#E2725B / #C75B3C) */
+  /* Figma Terracotta Brand Palette (#E2725B) */
   --color-brand-50: #fdf7f4;
   --color-brand-100: #faede5;
   --color-brand-200: #f5dacb;
@@ -56,27 +81,15 @@
   --color-brand-900: #6f301e;
   --color-brand-950: #3c160b;
 
-  /* Secondary Earthy Adobe & Warm Sand */
-  --color-secondary-50: #faf6f2;
-  --color-secondary-100: #f3ebe1;
-  --color-secondary-200: #e5d6c5;
-  --color-secondary-300: #d3bca4;
-  --color-secondary-400: #bd9e82;
-  --color-secondary-500: #a78263;
-  --color-secondary-600: #906b4d;
-  --color-secondary-700: #74543d;
-  --color-secondary-800: #5f4533;
-  --color-secondary-900: #4e392b;
-
   /* Role Accent Tokens */
   --role-admin: #c75b3c;
-  --role-admin-bg: rgba(199, 91, 60, 0.12);
+  --role-admin-bg: rgba(199, 91, 60, 0.14);
   --role-student: #e2725b;
-  --role-student-bg: rgba(226, 114, 91, 0.12);
+  --role-student-bg: rgba(226, 114, 91, 0.14);
   --role-staff: #d97706;
-  --role-staff-bg: rgba(217, 119, 6, 0.12);
+  --role-staff-bg: rgba(217, 119, 6, 0.14);
   --role-security: #dc2626;
-  --role-security-bg: rgba(220, 38, 38, 0.12);
+  --role-security-bg: rgba(220, 38, 38, 0.14);
 
   /* Semantic State Colors */
   --semantic-success: #16a34a;
@@ -85,10 +98,10 @@
   --semantic-info: #e2725b;
 
   /* Light Surface Palette (Warm Linen & Sunbaked Ceramic) */
-  --bg-app: #faf7f4;
+  --bg-app: #faf4ef;
   --bg-surface: #ffffff;
   --bg-surface-elevated: #ffffff;
-  --bg-surface-subtle: #f5ede6;
+  --bg-surface-subtle: #f4eae1;
   --bg-surface-glass: rgba(255, 255, 255, 0.88);
 
   --text-primary: #291a13;
@@ -98,15 +111,15 @@
 
   --border-subtle: #f4eae1;
   --border-default: #ebd9cc;
-  --border-strong: #d7bead;
-  --border-glass: rgba(255, 255, 255, 0.7);
+  --border-strong: #d8c2b3;
+  --border-glass: rgba(255, 255, 255, 0.75);
 
   /* Shadows with Warm Terracotta Ambient Glow */
   --shadow-sm: 0 1px 2px 0 rgba(60, 22, 11, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(60, 22, 11, 0.08), 0 2px 4px -2px rgba(60, 22, 11, 0.04);
   --shadow-lg: 0 10px 15px -3px rgba(60, 22, 11, 0.09), 0 4px 6px -4px rgba(60, 22, 11, 0.04);
   --shadow-xl: 0 20px 25px -5px rgba(60, 22, 11, 0.12), 0 8px 10px -6px rgba(60, 22, 11, 0.05);
-  --shadow-brand: 0 10px 25px -5px rgba(226, 114, 91, 0.32);
+  --shadow-brand: 0 10px 25px -5px rgba(226, 114, 91, 0.35);
 
   /* Radius */
   --radius-sm: 8px;
@@ -124,13 +137,13 @@
   color-scheme: light;
 }
 
-/* --- Dark Theme Palette (Deep Terracotta Obsidian & Roasted Clay) --- */
+/* --- Dark Theme Palette (Deep Terracotta Obsidian & Earthy Roasted Clay) --- */
 html.dark {
   --bg-app: #120b08;
   --bg-surface: #1b120d;
-  --bg-surface-elevated: #261a13;
+  --bg-surface-elevated: #291a13;
   --bg-surface-subtle: #21150f;
-  --bg-surface-glass: rgba(27, 18, 13, 0.88);
+  --bg-surface-glass: rgba(27, 18, 13, 0.9);
 
   --text-primary: #fbf7f4;
   --text-secondary: #c9b4a8;
@@ -146,7 +159,7 @@ html.dark {
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
-  --shadow-brand: 0 10px 25px -5px rgba(226, 114, 91, 0.4);
+  --shadow-brand: 0 10px 25px -5px rgba(226, 114, 91, 0.45);
 
   color-scheme: dark;
 }
@@ -191,7 +204,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(226, 114, 91, 0.28);
+  background: rgba(226, 114, 91, 0.35);
   border-radius: var(--radius-full);
 }
 
