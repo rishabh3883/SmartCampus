@@ -7,7 +7,8 @@ import {
     AlertTriangle, Droplets, Zap, PieChart as PieIcon, CheckCircle, XCircle,
     Clock, FileText, Send, BookOpen, Calendar, Activity, Shield, Users,
     UserMinus, UserCheck, Cpu, TrendingUp, LayoutDashboard, Radio, LogOut,
-    FileSpreadsheet, Scan, Edit2, Trash2, Megaphone, Search, X, ShieldCheck
+    FileSpreadsheet, Scan, Edit2, Trash2, Megaphone, Search, X, ShieldCheck,
+    ChevronRight, Sparkles, SlidersHorizontal, ArrowUpRight
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import InsightsWidget from '../../components/InsightsWidget';
@@ -28,32 +29,32 @@ const Sidebar = ({ activeTab, setActiveTab, complaintsCount, usersCount, broadca
     };
 
     return (
-        <div className="w-64 bg-white h-screen border-r border-slate-200 flex flex-col fixed left-0 top-0 z-50 shadow-sm font-sans">
-            {/* Logo */}
-            <div className="p-6 border-b border-slate-100 flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-500/20 shrink-0">
-                    <LayoutDashboard size={20} />
+        <aside className="w-64 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl h-screen border-r border-slate-200/70 dark:border-white/10 flex flex-col fixed left-0 top-0 z-50 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.04)] font-sans">
+            {/* Logo / App Header */}
+            <div className="p-5 border-b border-slate-200/50 dark:border-white/5 flex items-center gap-3">
+                <div className="w-9 h-9 bg-gradient-to-tr from-indigo-500 to-violet-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-500/25 shrink-0">
+                    <LayoutDashboard size={18} />
                 </div>
                 <div className="flex flex-col min-w-0">
-                    <h1 className="text-base font-black text-slate-900 tracking-tight leading-tight truncate">
-                        Smart<span className="text-indigo-600">Campus</span>
-                    </h1>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Admin Console</p>
+                    <span className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-tight truncate">
+                        Smart<span className="text-indigo-600 dark:text-indigo-400">Campus</span>
+                    </span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">Admin Console</span>
                 </div>
             </div>
 
             {/* Nav Items */}
-            <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1 custom-scrollbar">
-                <p className="px-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Main Menu</p>
+            <div className="flex-1 overflow-y-auto py-5 px-3 space-y-1 custom-scrollbar">
+                <p className="px-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Main Menu</p>
                 <SidebarItem id="overview" label="Overview" icon={LayoutDashboard} activeTab={activeTab} setActiveTab={setActiveTab} />
                 <SidebarItem id="broadcasts" label="Broadcasts" icon={Megaphone} activeTab={activeTab} setActiveTab={setActiveTab} count={broadcastsCount} />
                 <SidebarItem id="analytics" label="Analytics" icon={Activity} activeTab={activeTab} setActiveTab={setActiveTab} />
                 <SidebarItem id="operations" label="Operations" icon={Radio} activeTab={activeTab} setActiveTab={setActiveTab} count={complaintsCount} />
                 <SidebarItem id="users" label="User Mgmt" icon={Users} activeTab={activeTab} setActiveTab={setActiveTab} count={usersCount} />
 
-                <div className="my-6 border-t border-slate-100 mx-2"></div>
+                <div className="my-5 border-t border-slate-200/50 dark:border-white/5 mx-2"></div>
 
-                <p className="px-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Quick Access</p>
+                <p className="px-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Quick Access</p>
                 <QuickLink href="/admin/library" icon={BookOpen} label="Library & Seat QRs" />
                 <QuickLink href="/admin/events" icon={Calendar} label="Events & Gate Pass" />
                 <QuickLink href="/scan-seat" icon={Scan} label="Live QR Scanner" />
@@ -65,40 +66,42 @@ const Sidebar = ({ activeTab, setActiveTab, complaintsCount, usersCount, broadca
             </div>
 
             {/* Logout & Profile */}
-            <div className="p-4 border-t border-slate-100 bg-slate-50/50 space-y-2">
+            <div className="p-3 border-t border-slate-200/50 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02] space-y-2">
                 <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors"
                 >
-                    <LogOut size={18} />
+                    <LogOut size={16} />
                     <span>Logout</span>
                 </button>
-                <div className="flex items-center gap-3 pt-2 border-t border-slate-200/50">
-                    <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm shadow-sm ring-2 ring-white">A</div>
-                    <div className="flex-1">
-                        <div className="text-sm font-bold text-slate-800">Administrator</div>
-                        <div className="text-xs text-slate-500">System Admin</div>
+                <div className="flex items-center gap-3 p-2 rounded-xl bg-white dark:bg-slate-800/60 border border-slate-200/60 dark:border-white/5 shadow-2xs">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                        A
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">Administrator</div>
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500">System Admin</div>
                     </div>
                 </div>
             </div>
-        </div>
+        </aside>
     );
 };
 
 const SidebarItem = ({ id, label, icon: Icon, activeTab, setActiveTab, count }) => (
     <button
         onClick={() => setActiveTab(id)}
-        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${activeTab === id
-            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 group ${activeTab === id
+            ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-sm shadow-indigo-500/25'
+            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
             }`}
     >
-        <div className="flex items-center gap-3">
-            <Icon size={18} className={`transition-colors ${activeTab === id ? 'text-indigo-200' : 'text-slate-400 group-hover:text-slate-600'}`} />
-            {label}
+        <div className="flex items-center gap-2.5">
+            <Icon size={16} className={`transition-colors ${activeTab === id ? 'text-white' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+            <span>{label}</span>
         </div>
         {count > 0 && (
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${activeTab === id ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-600'
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${activeTab === id ? 'bg-white/20 text-white' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
                 }`}>
                 {count}
             </span>
@@ -107,9 +110,9 @@ const SidebarItem = ({ id, label, icon: Icon, activeTab, setActiveTab, count }) 
 );
 
 const QuickLink = ({ href, icon: Icon, label }) => (
-    <Link to={href} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all duration-200 group">
-        <Icon size={18} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
-        {label}
+    <Link to={href} className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-200 group">
+        <Icon size={16} className="text-slate-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" />
+        <span>{label}</span>
     </Link>
 );
 
@@ -312,21 +315,56 @@ const AdminDashboard = () => {
     };
 
     // Components
-    const StatCard = ({ title, value, icon: Icon, color }) => {
-        const colorClasses = {
-            rose: "bg-rose-50 text-rose-600",
-            blue: "bg-blue-50 text-blue-600",
-            amber: "bg-amber-50 text-amber-600",
-            emerald: "bg-emerald-50 text-emerald-600",
+    const StatCard = ({ title, value, icon: Icon, color, subtext = "Live telemetry" }) => {
+        const themeMap = {
+            rose: {
+                bg: 'from-rose-500/[0.07] to-transparent',
+                iconBg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
+                border: 'border-slate-200/80 dark:border-white/10 hover:border-rose-300 dark:hover:border-rose-500/30',
+                badge: 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+            },
+            blue: {
+                bg: 'from-blue-500/[0.07] to-transparent',
+                iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+                border: 'border-slate-200/80 dark:border-white/10 hover:border-blue-300 dark:hover:border-blue-500/30',
+                badge: 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+            },
+            amber: {
+                bg: 'from-amber-500/[0.07] to-transparent',
+                iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+                border: 'border-slate-200/80 dark:border-white/10 hover:border-amber-300 dark:hover:border-amber-500/30',
+                badge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+            },
+            emerald: {
+                bg: 'from-emerald-500/[0.07] to-transparent',
+                iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+                border: 'border-slate-200/80 dark:border-white/10 hover:border-emerald-300 dark:hover:border-emerald-500/30',
+                badge: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+            },
         };
+        const currentTheme = themeMap[color] || themeMap.blue;
+
         return (
-            <div className="card flex items-center justify-between group hover:border-slate-300 transition-colors bg-white">
-                <div>
-                    <p className="text-slate-500 text-sm font-medium mb-1">{title}</p>
-                    <h3 className="text-2xl font-bold text-slate-800">{value}</h3>
+            <div className={`p-5 rounded-2xl bg-white dark:bg-slate-900/90 border ${currentTheme.border} shadow-[0_2px_12px_-2px_rgba(0,0,0,0.04)] dark:shadow-none hover:shadow-lg transition-all duration-300 relative overflow-hidden group`}>
+                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${currentTheme.bg} rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500`}></div>
+                
+                <div className="flex items-start justify-between gap-3 mb-3 relative z-10">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                        {title}
+                    </span>
+                    <div className={`p-2.5 rounded-xl border ${currentTheme.iconBg} shadow-2xs group-hover:scale-105 transition-transform`}>
+                        <Icon size={18} />
+                    </div>
                 </div>
-                <div className={`p-3 rounded-xl ${colorClasses[color]} group-hover:scale-110 transition-transform`}>
-                    <Icon size={24} />
+
+                <div className="relative z-10">
+                    <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight tabular-nums mb-1">
+                        {value}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>{subtext}</span>
+                    </div>
                 </div>
             </div>
         );
@@ -335,10 +373,10 @@ const AdminDashboard = () => {
     const ComparisonPill = ({ label, diff }) => {
         const isUp = diff > 0;
         return (
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 flex justify-between items-center">
-                <span className="text-xs text-slate-500 font-bold uppercase">{label}</span>
-                <div className={`flex items-center text-sm font-bold ${isUp ? 'text-rose-600' : 'text-emerald-600'}`}>
-                    <TrendingUp size={14} className={`mr-1 ${!isUp && 'rotate-180'}`} />
+            <div className="bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-white/5 rounded-xl px-3 py-1.5 flex items-center gap-2">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">{label}</span>
+                <div className={`flex items-center text-xs font-bold ${isUp ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                    <TrendingUp size={12} className={`mr-0.5 ${!isUp && 'rotate-180'}`} />
                     {Math.abs(diff).toFixed(1)}%
                 </div>
             </div>
@@ -358,39 +396,44 @@ const AdminDashboard = () => {
             });
         }, [students]);
 
-        const ForecastCard = ({ label, value, unit }) => (
-            <div className="bg-white border border-slate-200 p-4 rounded-xl text-center shadow-sm">
-                <div className="text-2xl font-bold text-indigo-600">{value}</div>
-                <div className="text-xs text-slate-500 uppercase font-bold mt-1">{label}</div>
-                <div className="text-[10px] text-slate-400">{unit}</div>
+        const ForecastCard = ({ label, value, unit, icon: Icon, color }) => (
+            <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200/70 dark:border-white/10 p-4 rounded-2xl text-center shadow-2xs hover:shadow-md transition-all">
+                <div className="text-2xl font-black text-slate-900 dark:text-white tabular-nums">{value}</div>
+                <div className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider mt-1">{label}</div>
+                <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">{unit}</div>
             </div>
         );
 
         return (
-            <div className="card relative overflow-hidden bg-white mt-8">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl pointer-events-none"></div>
-                <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
-                    <div className="md:w-1/3">
-                        <h2 className="text-xl font-bold text-slate-900 mb-2">🚀 Resource AI Forecaster</h2>
-                        <p className="text-slate-500 text-sm mb-6">Simulate infrastructure needs based on projected student intake.</p>
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                            <label className="text-xs text-slate-500 uppercase font-bold tracking-wider">Projected Students</label>
-                            <div className="flex items-end gap-2 mt-2">
-                                <span className="text-3xl font-black text-slate-900">{students}</span>
-                                <span className="text-sm text-slate-500 mb-1">students</span>
+            <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.04)] relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/[0.04] dark:bg-indigo-500/[0.08] rounded-full blur-3xl pointer-events-none"></div>
+                <div className="relative z-10 flex flex-col lg:flex-row gap-8 items-center">
+                    <div className="lg:w-1/3 w-full">
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                                <Cpu size={16} />
+                            </div>
+                            <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">Resource Forecaster</h2>
+                        </div>
+                        <p className="text-slate-500 dark:text-slate-400 text-xs mb-5">Simulate campus infrastructure load based on student enrollment projection.</p>
+                        
+                        <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200/60 dark:border-white/5">
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider">Projected Enrollment</label>
+                                <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{students.toLocaleString()} Students</span>
                             </div>
                             <input
                                 type="range" min="100" max="10000" step="100" value={students}
                                 onChange={e => setStudents(Number(e.target.value))}
-                                className="w-full mt-4 accent-indigo-600 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                className="w-full mt-3 accent-indigo-600 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                             />
                         </div>
                     </div>
-                    <div className="md:w-2/3 grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <ForecastCard label="Hostel Rooms" value={forecast.rooms} unit="Units" />
-                        <ForecastCard label="Daily Water" value={forecast.water.toLocaleString()} unit="Liters" />
-                        <ForecastCard label="Daily Food" value={forecast.food} unit="kg" />
-                        <ForecastCard label="Library Seats" value={forecast.lib} unit="Seats" />
+                    <div className="lg:w-2/3 w-full grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <ForecastCard label="Hostel Rooms" value={forecast.rooms.toLocaleString()} unit="Units" />
+                        <ForecastCard label="Daily Water" value={forecast.water.toLocaleString()} unit="Liters/Day" />
+                        <ForecastCard label="Daily Food" value={forecast.food.toLocaleString()} unit="kg/Day" />
+                        <ForecastCard label="Library Seats" value={forecast.lib.toLocaleString()} unit="Capacity" />
                     </div>
                 </div>
             </div>
@@ -398,7 +441,7 @@ const AdminDashboard = () => {
     };
 
     return (
-        <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+        <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden font-sans">
             <Sidebar
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
@@ -410,96 +453,111 @@ const AdminDashboard = () => {
             {/* Main Content Area */}
             <div className="flex-1 overflow-y-auto relative ml-64 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
                 {/* Header */}
-                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30 border-b border-slate-200 dark:border-slate-800 px-8 py-4 flex justify-between items-center">
+                <header className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl sticky top-0 z-30 border-b border-slate-200/60 dark:border-white/10 px-8 py-4 flex justify-between items-center shadow-2xs">
                     <div>
-                        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">
+                        <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                             {activeTab === 'overview' && 'Executive Overview'}
-                            {activeTab === 'broadcasts' && 'Campus Broadcast & Announcements'}
-                            {activeTab === 'analytics' && 'Analytics & Reports'}
-                            {activeTab === 'operations' && 'Campus Operations'}
-                            {activeTab === 'users' && 'User Management'}
-                        </h2>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                            {activeTab === 'broadcasts' && 'Campus Broadcasts & Circulars'}
+                            {activeTab === 'analytics' && 'Analytics & Resource Reports'}
+                            {activeTab === 'operations' && 'Campus Operations & Dispatches'}
+                            {activeTab === 'users' && 'User Directory & Access Control'}
+                        </h1>
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium tracking-wide">
+                            {new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        </p>
                     </div>
                     <div className="flex items-center gap-3">
                         <ThemeToggle />
-                        <div className="flex items-center gap-2 bg-purple-50 dark:bg-purple-950/60 px-3 py-1.5 rounded-full border border-purple-200 dark:border-purple-800">
-                            <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
-                            <span className="text-xs font-bold text-purple-700 dark:text-purple-300">Live Telemetry</span>
+                        <div className="flex items-center gap-2 bg-emerald-500/10 dark:bg-emerald-500/15 px-3 py-1.5 rounded-full border border-emerald-500/20">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">Live Telemetry</span>
                         </div>
                     </div>
-                </div>
+                </header>
 
-                <div className="p-8 pb-20 space-y-8">
+                <div className="p-8 pb-24 space-y-8 max-w-7xl mx-auto">
                     {/* Image Modal */}
                     {viewImage && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={() => setViewImage(null)}>
-                            <button className="absolute top-4 right-4 text-white hover:text-rose-400 transition-colors"><XCircle size={32} /></button>
-                            <img src={`${SERVER_URL}/${viewImage}`} alt="Evidence" className="max-w-full max-h-[90vh] rounded-lg shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()} />
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md" onClick={() => setViewImage(null)}>
+                            <button className="absolute top-5 right-5 text-white/70 hover:text-white transition-colors"><XCircle size={28} /></button>
+                            <img src={`${SERVER_URL}/${viewImage}`} alt="Evidence" className="max-w-full max-h-[85vh] rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200 border border-white/10" onClick={e => e.stopPropagation()} />
                         </div>
                     )}
 
                     {/* TAB 1: OVERVIEW */}
                     {activeTab === 'overview' && (
-                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+                        <div className="animate-in fade-in slide-in-from-bottom-3 duration-400 space-y-8">
                             {/* Stats Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <StatCard title="Active Alerts" value={alerts.length} icon={AlertTriangle} color="rose" />
-                                <StatCard title="Water Usage" value={`${stats.water} L`} icon={Droplets} color="blue" />
-                                <StatCard title="Elec Usage" value={`${stats.elec} kWh`} icon={Zap} color="amber" />
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                <StatCard title="Active Alerts" value={alerts.length} icon={AlertTriangle} color="rose" subtext={`${alerts.filter(a => a.severity === 'High').length} high severity`} />
+                                <StatCard title="Water Consumption" value={`${stats.water} L`} icon={Droplets} color="blue" subtext="Across registered zones" />
+                                <StatCard title="Electricity Load" value={`${stats.elec} kWh`} icon={Zap} color="amber" subtext="Real-time campus grid" />
                             </div>
 
                             <InsightsWidget />
 
-                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                                 {/* Analytics Summary Chart */}
-                                <div className="lg:col-span-8 card bg-white">
+                                <div className="lg:col-span-8 p-6 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.04)]">
                                     <div className="flex justify-between items-center mb-6">
-                                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                            <Activity size={20} className="text-indigo-600" /> Campus Overview
-                                        </h3>
-                                        <button onClick={() => setActiveTab('analytics')} className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center">
-                                            View Detailed Analysis <TrendingUp size={14} className="ml-1" />
+                                        <div>
+                                            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                                <Activity size={18} className="text-indigo-600 dark:text-indigo-400" /> Campus Resource Baseline
+                                            </h3>
+                                            <p className="text-xs text-slate-400 dark:text-slate-500">10-day trending analysis</p>
+                                        </div>
+                                        <button onClick={() => setActiveTab('analytics')} className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-1 bg-indigo-500/10 px-3 py-1.5 rounded-xl border border-indigo-500/20 transition-colors">
+                                            <span>Deep Dive</span> <TrendingUp size={13} />
                                         </button>
                                     </div>
-                                    <div className="h-80 w-full">
+                                    <div className="h-72 w-full">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <AreaChart data={chartData}>
                                                 <defs>
-                                                    <linearGradient id="colorAll" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1} />
-                                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                                    <linearGradient id="colorWater" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25} />
+                                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                                    </linearGradient>
+                                                    <linearGradient id="colorElec" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.25} />
+                                                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
                                                     </linearGradient>
                                                 </defs>
-                                                <XAxis dataKey="name" stroke="#94a3b8" tick={{ fill: '#64748b', fontSize: 12 }} tickLine={false} axisLine={false} />
-                                                <YAxis stroke="#94a3b8" tick={{ fill: '#64748b', fontSize: 12 }} tickLine={false} axisLine={false} />
-                                                <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', color: '#0f172a', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                                                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                                                <Area type="monotone" dataKey="Water" stroke="#3b82f6" fillOpacity={1} fill="url(#colorAll)" strokeWidth={2} />
-                                                <Area type="monotone" dataKey="Electricity" stroke="#f59e0b" fillOpacity={1} fill="url(#colorAll)" strokeWidth={2} />
+                                                <XAxis dataKey="name" stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 11 }} tickLine={false} axisLine={false} />
+                                                <YAxis stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 11 }} tickLine={false} axisLine={false} />
+                                                <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(8px)', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)', color: '#ffffff', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }} />
+                                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" vertical={false} />
+                                                <Area type="monotone" dataKey="Water" stroke="#3b82f6" fillOpacity={1} fill="url(#colorWater)" strokeWidth={2.5} />
+                                                <Area type="monotone" dataKey="Electricity" stroke="#f59e0b" fillOpacity={1} fill="url(#colorElec)" strokeWidth={2.5} />
                                             </AreaChart>
                                         </ResponsiveContainer>
                                     </div>
                                 </div>
 
                                 {/* AI Insights & Critical Alerts */}
-                                <div className="lg:col-span-4 space-y-6">
-                                    <div className="card h-96 flex flex-col bg-white">
-                                        <h3 className="text-lg font-bold mb-4 flex items-center text-teal-600">
-                                            <Zap className="mr-2" size={20} /> AI Insights
+                                <div className="lg:col-span-4 p-6 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.04)] flex flex-col">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                            <Zap className="text-amber-500" size={18} /> Automated Signals
                                         </h3>
-                                        <div className="overflow-y-auto space-y-3 pr-2 scrollbar-hide flex-1">
-                                            {alerts.filter(a => a.type.includes('AI') || a.severity === 'Low').map(a => (
-                                                <div key={a._id} className="p-3 rounded-lg bg-teal-50 border border-teal-100">
-                                                    <div className="flex justify-between items-start mb-1">
-                                                        <span className="text-xs font-bold text-teal-600">OPTIMIZED</span>
-                                                        <span className="text-[10px] text-slate-400">{new Date(a.timestamp).toLocaleDateString()}</span>
-                                                    </div>
-                                                    <p className="text-sm text-slate-700">{a.message.split('Stats:')[0]}</p>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{alerts.length} Events</span>
+                                    </div>
+                                    <div className="overflow-y-auto space-y-2.5 pr-1 flex-1 max-h-[290px] custom-scrollbar">
+                                        {alerts.filter(a => a.type.includes('AI') || a.severity === 'Low').map(a => (
+                                            <div key={a._id} className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-white/5 space-y-1">
+                                                <div className="flex justify-between items-start">
+                                                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">OPTIMIZED</span>
+                                                    <span className="text-[10px] text-slate-400">{new Date(a.timestamp).toLocaleDateString()}</span>
                                                 </div>
-                                            ))}
-                                            {alerts.length === 0 && <p className="text-center text-slate-400 mt-10">Analysis in progress...</p>}
-                                        </div>
+                                                <p className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">{a.message.split('Stats:')[0]}</p>
+                                            </div>
+                                        ))}
+                                        {alerts.length === 0 && (
+                                            <div className="text-center text-slate-400 text-xs py-12 flex flex-col items-center justify-center gap-2">
+                                                <Sparkles className="text-slate-300 dark:text-slate-600 animate-pulse" size={24} />
+                                                <span>Telemetry analysis in progress...</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
